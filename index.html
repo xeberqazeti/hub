@@ -1,338 +1,139 @@
 <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Multiplayer Spy Game - Find the spy among your friends!">
-    <title>Spy Game - Who's the Spy?</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-</head>
-
-<body>
-    <div class="container">
-        <!-- Game Selection Screen -->
-        <div id="selection-screen" class="screen active">
-            <div class="game-header">
-                <h1 class="game-title">🎮 Game Hub</h1>
-                <p class="game-subtitle">Select a game to play with friends!</p>
-            </div>
-
-            <div class="game-grid">
-                <div class="game-card" id="select-spy">
-                    <div class="game-card-icon">🕵️</div>
-                    <div class="game-card-content">
-                        <h3>Spy Game</h3>
-                        <p>Find the spy among your friends!</p>
-                        <span class="badge">Online</span>
-                    </div>
-                </div>
-
-                <div class="game-card" id="select-wordle">
-                    <div class="game-card-icon">🔠</div>
-                    <div class="game-card-content">
-                        <h3>Wordle</h3>
-                        <p>Multiplayer word guessing game.</p>
-                        <span class="badge">Online</span>
-                    </div>
-                </div>
-
-                <div class="game-card" id="select-scribble">
-                    <div class="game-card-icon">🎨</div>
-                    <div class="game-card-content">
-                        <h3>Scribble</h3>
-                        <p>Draw and guess with friends!</p>
-                        <span class="badge">New</span>
-                    </div>
-                </div>
-            </div>
-        </div> <!-- Selection Screen -->
-
-        <!-- Lobby Screen -->
-        <div id="lobby-screen" class="screen">
-            <div class="game-header">
-                <button id="back-to-hub-btn" class="back-btn">← Back to Hub</button>
-                <h1 class="game-title">🕵️ Spy Game</h1>
-                <p class="game-subtitle">Find the spy among your friends!</p>
-            </div>
-
-            <!-- Join Game Section -->
-            <div id="join-section" class="card">
-                <div class="input-group">
-                    <label for="player-name">Enter Your Name</label>
-                    <input type="text" id="player-name" placeholder="Your name..." maxlength="20" autocomplete="off">
-                </div>
-                <button id="join-btn" class="btn btn-primary">Join Game</button>
-            </div>
-
-            <!-- Player List Section (Always Visible) -->
-            <div id="players-waiting" class="card">
-                <h3>Players in Lobby</h3>
-
-                <!-- Lobby Controls (Only visible after joining) -->
-                <div id="lobby-controls" style="display: none; margin-bottom: 1rem;">
-                    <p class="waiting-text" style="font-weight: bold; color: #4CAF50;">You have joined!</p>
-
-                    <div class="category-group" style="margin-bottom: 1rem;">
-                        <label for="category-select" style="font-size: 0.9rem; color: #666;">Category:</label>
-                        <select id="category-select" class="form-control"
-                            style="width: 100%; padding: 0.5rem; margin-top: 0.2rem;">
-                            <option value="animals">🐶 Animals</option>
-                            <option value="capitals">🏛️ Capitals</option>
-                        </select>
-                    </div>
-
-                    <div class="button-group">
-                        <button id="start-game-btn" class="btn btn-primary" disabled>Start Game</button>
-                        <button id="leave-btn" class="btn btn-secondary">Leave</button>
-                    </div>
-                </div>
-
-                <div id="players-list" class="players-list"></div>
-                <p class="waiting-text">Waiting for more players...</p>
-
-                <button id="reset-lobby-btn" class="btn btn-danger" style="margin-top: 1rem; width: 100%;">Reset Lobby
-                    (Kick All)</button>
-            </div>
-        </div>
-
-        <!-- Game Screen -->
-        <div id="game-screen" class="screen">
-            <div class="game-header">
-                <h1 class="game-title">🕵️ Your Role</h1>
-            </div>
-
-            <div class="role-card">
-                <div id="role-display" class="role-display">
-                    <div class="role-icon">🦊</div>
-                    <div class="role-name">Fox</div>
-                </div>
-            </div>
-
-            <div class="card">
-                <h3>All Players</h3>
-                <div id="game-players-list" class="players-list"></div>
-            </div>
-
-            <div class="instructions card">
-                <h3>How to Play</h3>
-                <p><strong>If you're an animal:</strong> Discuss and figure out who the spy is!</p>
-                <p><strong>If you're the spy:</strong> Blend in and don't get caught!</p>
-            </div>
-
-            <button id="new-game-btn" class="btn btn-secondary">New Game</button>
-        </div> <!-- Game Screen -->
-
-        <!-- Wordle Lobby Screen -->
-        <div id="wordle-lobby-screen" class="screen">
-            <div class="game-header">
-                <button id="wordle-back-btn" class="back-btn">← Back to Hub</button>
-                <h1 class="game-title">🔠 Wordle Duel</h1>
-                <p class="game-subtitle">Guess your opponent's word!</p>
-            </div>
-
-            <div id="wordle-join-section" class="card">
-                <div class="input-group">
-                    <label for="wordle-player-name">Enter Your Name</label>
-                    <input type="text" id="wordle-player-name" placeholder="Your name..." maxlength="20"
-                        autocomplete="off">
-                </div>
-                <button id="wordle-join-btn" class="btn btn-primary">Join Duel</button>
-            </div>
-
-            <div id="wordle-setup-section" class="card" style="display: none;">
-                <h3>Game Setup</h3>
-                <div class="input-group">
-                    <label for="wordle-secret-word">Your Secret Word</label>
-                    <input type="text" id="wordle-secret-word" placeholder="Enter word..." maxlength="10"
-                        autocomplete="off"
-                        style="font-size: 1.5rem; text-align: center; letter-spacing: 2px; text-transform: uppercase;">
-                    <p class="input-hint">Must match opponent's word length to start.</p>
-                    <div class="special-chars" id="wordle-secret-special-chars">
-                        <button class="special-char-btn" data-char="ı">ı</button>
-                        <button class="special-char-btn" data-char="ə">ə</button>
-                        <button class="special-char-btn" data-char="ö">ö</button>
-                        <button class="special-char-btn" data-char="ü">ü</button>
-                        <button class="special-char-btn" data-char="ğ">ğ</button>
-                        <button class="special-char-btn" data-char="ç">ç</button>
-                        <button class="special-char-btn" data-char="ş">ş</button>
-                    </div>
-                </div>
-                <div class="button-group">
-                    <button id="wordle-ready-btn" class="btn btn-primary">Set Word & Ready</button>
-                    <button id="wordle-change-btn" class="btn btn-secondary" style="display: none;">Change Word</button>
-                </div>
-
-                <div class="players-status card" style="margin-top: 1.5rem; background: var(--bg-elevated);">
-                    <div id="wordle-players-list" class="players-list"></div>
-                    <p id="wordle-length-warning" class="warning-text"
-                        style="display: none; color: var(--danger); margin-top: 1rem; text-align: center; font-size: 0.9rem;">
-                        Words must have the same length!</p>
-                </div>
-
-                <button id="wordle-start-btn" class="btn btn-success"
-                    style="margin-top: 1rem; background: var(--success); display: none;">Start Game</button>
-            </div>
-
-            <div id="wordle-full-msg" class="card" style="display: none; text-align: center;">
-                <p>Room is full (Max 2 players). Please wait or try later.</p>
-                <button id="wordle-full-back-btn" class="btn btn-secondary" style="margin-top: 1rem;">Back to
-                    Hub</button>
-            </div>
-        </div>
-
-        <!-- Wordle Game Screen -->
-        <div id="wordle-game-screen" class="screen">
-            <div class="game-header">
-                <h1 class="game-title">🔠 Duel in Progress</h1>
-                <div id="wordle-info-bar" class="info-bar">
-                    <span id="wordle-target-length">Length: 5</span>
-                    <span id="wordle-turn-indicator">Waiting...</span>
-                </div>
-            </div>
-
-            <div class="wordle-game-wrapper">
-                <!-- Letter Note Panel (Left) -->
-                <div class="wordle-note-panel card">
-                    <h3 class="note-panel-title">Notes</h3>
-                    <div class="alphabet-grid" id="wordle-alphabet-grid">
-                        <!-- Letters injected by JS -->
-                    </div>
-                    <p class="note-hint">Tap letters to hide/show</p>
-                    <label class="note-label" for="wordle-notes">Notes</label>
-                    <textarea id="wordle-notes" class="note-textarea" placeholder="Type your notes here..." spellcheck="false"></textarea>
-                </div>
-
-                <!-- Main Game Area -->
-                <div class="wordle-main">
-                    <div class="game-layout">
-                        <!-- My Guesses -->
-                        <div class="card">
-                            <h3>Your Guesses</h3>
-                            <div id="wordle-guesses-list" class="guesses-list"></div>
-
-                            <div id="wordle-input-area" style="margin-top: 1.5rem;">
-                                <div class="input-group">
-                                    <input type="text" id="wordle-guess-input" placeholder="Enter guess..." autocomplete="off">
-                                </div>
-                                <button id="wordle-submit-guess" class="btn btn-primary">Submit Guess</button>
-                                <div class="special-chars" id="wordle-special-chars">
-                                    <button class="special-char-btn" data-char="ı">ı</button>
-                                    <button class="special-char-btn" data-char="ə">ə</button>
-                                    <button class="special-char-btn" data-char="ö">ö</button>
-                                    <button class="special-char-btn" data-char="ü">ü</button>
-                                    <button class="special-char-btn" data-char="ğ">ğ</button>
-                                    <button class="special-char-btn" data-char="ç">ç</button>
-                                    <button class="special-char-btn" data-char="ş">ş</button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Opponent's Progress (Summary) -->
-                        <div class="card">
-                            <h3>Opponent's Progress</h3>
-                            <div id="wordle-opponent-history" class="guesses-list"></div>
-                        </div>
-                    </div>
-
-                    <div class="button-group" style="margin-top: 1.5rem;">
-                        <button id="wordle-quit-btn" class="btn btn-secondary">Quit Game</button>
-                        <button id="wordle-new-game-btn" class="btn btn-primary" style="display: none;">New Game</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+<html lang="az"><head><base href="https://sonxeber.az/">
+<title>Sonxeber.az - En Son xeberler, Azerbaycan xeberleri 2026, Xeberler bu gun, En aktual xeberler 2026</title>
+<meta http-equiv="content-type" content="text/html;charset=UTF-8" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Sonxeber.az - En Son xeberler, Azerbaycan xeberleri 2026, Xeberler bu gun, En aktual xeberler 2026 Azərbaycan və dünyada baş verən ən son xəbərlər" /> 
+<meta name="keyword" content="Sonxeber.az - En Son xeberler, Azerbaycan xeberleri 2026, Xeberler bu gun, En aktual xeberler 2026 " />
+<meta property="og:title" content="Sonxeber.az - En Son xeberler, Azerbaycan xeberleri 2026, Xeberler bu gun, En aktual xeberler 2026" /> 
+<meta property="og:image" content="https://sonxeber.az/images/fbcover.jpg" />
+<meta property="og:image:width" content="470" />
+<meta property="og:image:height" content="265" />
+<meta property="og:description" content="Sonxeber.az - En Son xeberler, Azerbaycan xeberleri 2026, Xeberler bu gun, En aktual xeberler 2026" />
+<meta property="og:site_name" content="Sonxeber.az" />
+<meta property="fb:app_id" content="482019618623092" />
+<meta property="og:locale" content="az_AZ" />
+<meta property="og:type" content="article" />
+<link rel="canonical" href="https://sonxeber.az/" />
+<meta property="og:url" content="https://sonxeber.az/" />
+<meta name="google-site-verification" content="_yiBellAFII_mJngL-HkiIzu5bJednIwrW8gy-_jOkk" /><link href="/favicon.png" rel="shortcut icon" type="image/x-icon" />
 
 
-        <!-- Scribble Lobby Screen -->
-        <div id="scribble-lobby-screen" class="screen">
-            <div class="game-header">
-                <button id="scribble-back-btn" class="back-btn">← Back to Hub</button>
-                <h1 class="game-title">🎨 Scribble Duel</h1>
-                <p class="game-subtitle">One draws, one guesses!</p>
-            </div>
+<link href="/allmini.css" rel="stylesheet"> <script src="/allmini.js" type="text/javascript"></script> <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.1/css/swiper.min.css" type="text/css" />
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/4.5.1/js/swiper.js"></script>
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-WD5VVX6');</script>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-WD5VVX6"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+</head><body>
+<div id="wrap">
+<div id="topbanners"><ins data-revive-zoneid="533" data-revive-id="144e1bb6fa796840b2323709bbb2f595"></ins>
+<script async src="//ads2.imv.az/www/delivery/asyncjs.php"></script></div><header>
+<div id="header" class="navi clearfix"><div class="container">
 
-            <div id="scribble-join-section" class="card">
-                <div class="input-group">
-                    <label for="scribble-player-name">Enter Your Name</label>
-                    <input type="text" id="scribble-player-name" placeholder="Your name..." maxlength="20"
-                        autocomplete="off">
-                </div>
-                <button id="scribble-join-btn" class="btn btn-primary">Join Lobby</button>
-            </div>
 
-            <div class="card">
-                <h3>Players in Lobby</h3>
-                <div id="scribble-players-list" class="players-list"></div>
-                
-                <div id="scribble-setup-section" style="display: none; margin-top: 1.5rem;">
-                    <p class="waiting-text" style="color: var(--success); font-weight: bold; margin-bottom: 1rem;">You have joined!</p>
-                    <button id="scribble-start-btn" class="btn btn-success" style="width: 100%; display: none;">Start Game</button>
-                </div>
-            </div>
-        </div>
+<a id="bolmeler" href="#bolmeler"></a>
 
-        <!-- Scribble Game Screen -->
-        <div id="scribble-game-screen" class="screen">
-            <div class="game-header">
-                <h1 class="game-title" id="scribble-game-title">🎨 Scribble</h1>
-                <div id="scribble-info-bar" class="info-bar">
-                    <span id="scribble-role-indicator">Waiting...</span>
-                    <span id="scribble-word-display" style="color: var(--secondary); font-weight: 800;">•••••</span>
-                </div>
-            </div>
+<a class="logo" href="/" title="En Son xeberler, Azerbaycan xeberleri 2026, Xeberler bu gun, En aktual xeberler 2026" onclick="myga('home-alink');"><img src="/logo.png?32" /></a>
 
-            <div class="game-layout" style="grid-template-columns: 2fr 1fr;">
-                <!-- Canvas Area -->
-                <div class="card" style="padding: 0; overflow: hidden; position: relative;">
-                    <canvas id="scribble-canvas" width="600" height="450"
-                        style="background: white; cursor: crosshair; width: 100%; height: auto; display: block;"></canvas>
 
-                    <div id="scribble-tools" class="drawing-tools"
-                        style="padding: 1rem; background: var(--bg-card); display: none; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <div style="display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button id="scribble-pencil-btn" class="btn btn-secondary active" style="width: auto; padding: 0.5rem 1rem;">✏️</button>
-                                <button id="scribble-eraser-btn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;">🧽</button>
-                            </div>
-                            <input type="color" id="scribble-color" value="#9333ea"
-                                style="border: none; background: none; width: 40px; height: 40px; cursor: pointer;">
-                            <input type="range" id="scribble-size" min="2" max="50" value="5" style="width: 100px;">
-                            <button id="scribble-clear-btn" class="btn btn-secondary"
-                                style="width: auto; padding: 0.5rem 1rem;">Clear</button>
-                        </div>
-                    </div>
-                </div>
+<div class="valyutas hidden-xs">
+<a href="/valyuta-mezennesi" title="Valyuta mezennesi">
+Valyuta</a></div>
 
-                <!-- Guessing Area -->
-                <div class="card" style="display: flex; flex-direction: column;">
-                    <h3>Guesses</h3>
-                    <div id="scribble-guess-list" class="guesses-list" style="flex: 1; min-height: 300px;"></div>
+<div id="butsearch" onclick="myga('top-searchbutton')"></div>
 
-                    <div id="scribble-guess-area" style="margin-top: 1rem; display: none;">
-                        <div class="input-group" style="margin-bottom: 0.5rem;">
-                            <input type="text" id="scribble-guess-input" placeholder="Type your guess..."
-                                autocomplete="off">
-                        </div>
-                        <button id="scribble-submit-guess" class="btn btn-primary">Guess</button>
-                    </div>
-                </div>
-            </div>
+<a id="valyutaicon" href="/valyuta-mezennesi" title="Valyuta mezennesi">&#36;</a>
 
-            <div class="button-group" style="margin-top: 1.5rem;">
-                <button id="scribble-quit-btn" class="btn btn-secondary">Quit Game</button>
-                <button id="scribble-new-game-btn" class="btn btn-primary" style="display: none;">Play Again</button>
-            </div>
-        </div>
+<form id="searchform" method="post" action="/search/">
+<input id="inputsearch" type="text" name="query" value="" placeholder="Axtarış.." />
+<input id="submitsearch" type="submit" name="submit" value=" " onclick="myga('search-main');" />
+</form>
 
-        <!-- Firebase SDK -->
-        <script type="module" src="game.js?v=1.4"></script>
-        <script type="module" src="wordle.js?v=1.0"></script>
-        <script type="module" src="scribble.js?v=1.0"></script>
-    </div> <!-- Final Container Closing -->
-</body>
 
-</html>
+<input type="text" name="frinputsearch" id="frinputsearch" value=""/>
+
+
+</div></div>
+
+<div id="cats" class="cats clearfix"><div class="container">
+<ul id="ulcats">
+<li><a href="/sosial-xeberler/" title="Sosial xəbərlər">Sosial</a></li><li><a href="/iqtisadiyyat-xeberleri/" title="İqtisadiyyat xəbərləri">İqtisadiyyat</a></li><li><a href="/siyaset-xeberleri/" title="Siyasət xəbərləri">Siyasət</a></li><li><a href="/hadise-xeberleri/" title="Hadisə xəbərləri">Hadisə</a></li><li><a href="/kriminal-xeberler/" title="Kriminal xəbərlər">Kriminal</a></li><li><a href="/medeniyyet-xeberleri/" title="Mədəniyyət xəbərləri">Mədəniyyət</a></li><li><a href="/sou-biznes-xeberleri/" title="Şou-biznes xəbərlər">Şou-biznes</a></li><li><a href="/idman-xeberleri/" title="İdman xəbərləri">İdman</a></li><li><a href="/maraqli-xeberler/" title="Maraqlı xəbərlər">Maraqlı</a></li><li><a href="/dunya-xeberleri/" title="Dünyada xəbərlər">Dünyada</a></li><li><a href="/mini-futbol-xeberleri/" title="Mini Futbol xəbərlər">Mini Futbol</a></li><li><a href="#" onclick="window.location.href = window.location.origin + '/games.html'; return false;">Reklam</a></li></ul>
+</div></div>
+</header>
+<div id="maincont" class="container"> 
+<div class="centerblok clearfix">
+<div class="swiper-container"><div class="swiper-wrapper"><div class="swiper-slide"><a href="/395680/azerbaycanin-serbest-gulescisi-yusif-abdullayev-bolqaristanin-samokov-seherinde-kecirilen-u15-avropa-cempionatinda-qizil-medal-qazanib.-oxu.az-xeber-v"><img src="/uploads/266cf14921561f43d6b11e5d493774a7.png" /> <span>Azərbaycan güləşçisi Avropa çempionu oldu - FOTO</span></a></div><div class="swiper-slide"><a href="/395679/sakinlerin-nezerine-bezi-erazilerde-qaz-olmayacaq"><img src="/uploads/38d5206bf45f9e0f86c0f327a33152a3.png" /> <span>Sakinlərin NƏZƏRİNƏ: Bəzi ərazilərdə qaz olmayacaq</span></a></div><div class="swiper-slide"><a href="/395677/hava-keskin-deyisir-bu-tarixedek-guclu-kulek-xeberdarligi"><img src="/uploads/9008baab34a06c5724d0c1d80a791d67.jpg" /> <span>Hava kəskin dəyişir - Bu tarixədək GÜCLÜ KÜLƏK XƏBƏRDARLIĞI</span></a></div><div class="swiper-slide"><a href="/395676/leyla-eliyeva-ve-alyona-eliyeva-sosial-reabilitasiya-merkezini-ziyaret-edibler"><img src="/uploads/e1f4963a1ef8e1a39db76bca6e119540.png" /> <span>Leyla Əliyeva və Alyona Əliyeva Sosial Reabilitasiya Mərkəzini ziyarət ediblər</span></a></div><div class="swiper-slide"><a href="/395655/iran-polisinden-azerbaycanin-tebrizdeki-konsulunun-helak-oldugu-qeza-ile-bagli-aciqlama"><img src="/uploads/1b21234c3aafb46c9907e933b30ab45e.png" /> <span>İran polisindən Azərbaycanın Təbrizdəki konsulunun həlak olduğu qəza ilə bağlı AÇIQLAMA</span></a></div><div class="swiper-slide"><a href="/395624/abs-ve-iran-arasindaki-sazisin-teferruati-aciqlandi"><img src="/uploads/6291834e971fbfb421063c3e5651141e.png" /> <span>ABŞ və İran arasındakı sazişin təfərrüatı açıqlandı</span></a></div></div>
+        <div class="swiper-button-next swiper-button-white"></div><div class="swiper-button-prev swiper-button-white"></div>
+        <div class="swiper-pagination"></div></div><h1><a href="/son-xeberler" title="Son xeberler , en son Azerbaycan xeberleri ">Son xəbərlər</a></h1><div class="newslister clearfix" id="prodwrap"><div class="nart"><a class="thumb_zoom" href="/395654/yayin-gorunmeyen-tehlukesi-bezi-qidalar-sizi-zeherleye-biler" title="Yayın görünməyən təhlükəsi: Bəzi qidalar sizi zəhərləyə bilər"><div class="imgholder"><img src="/uploads/ss_395654_604a5e7df8f07b54826e98abdb4b59c3.jpg" alt="." /> </div><h3>Yayın görünməyən təhlükəsi: Bəzi qidalar sizi zəhərləyə bilər</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395653/rusiyada-seher-meri-vefat-etdi" title="Rusiyada şəhər meri vəfat etdi"><div class="imgholder"><img src="/uploads/ss_395653_d9689231768a894294ac3a18c8f9517c.jpg" alt="." /> </div><h3>Rusiyada şəhər meri vəfat etdi</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395652/pomidoru-iri-ve-bol-yetisdirmeyin-sirri-bu-metbex-tullantisini-zibilliye-atmayin" title="Pomidoru iri və bol yetişdirməyin SİRRİ - bu mətbəx tullantısını zibilliyə atmayın"><div class="imgholder"><img src="/uploads/ss_395652_072b39ac3983b980170fa4473f5d96fd.jpg" alt="." /> </div><h3>Pomidoru iri və bol yetişdirməyin SİRRİ - bu mətbəx tullantısını zibilliyə atmayın</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395651/niye-seherler-xususen-de-bazar-ve-birinci-gunler-paltar-yumamalisiniz-xalq-inanclari" title="Niyə səhərlər, xüsusən də bazar və birinci günlər paltar yumamalısınız? - Xalq inancları"><div class="imgholder"><img src="/uploads/ss_395651_2744e4dbc41b7e7ad323f7aef648ceaa.jpg" alt="." /> </div><h3>Niyə səhərlər, xüsusən də bazar və birinci günlər paltar yumamalısınız? - Xalq inancları</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395680/azerbaycanin-serbest-gulescisi-yusif-abdullayev-bolqaristanin-samokov-seherinde-kecirilen-u15-avropa-cempionatinda-qizil-medal-qazanib.-oxu.az-xeber-v" title="Azərbaycan güləşçisi Avropa çempionu oldu - FOTO"><div class="imgholder"><img src="/uploads/ss_395680_266cf14921561f43d6b11e5d493774a7.jpg" alt="." /> </div><h3>Azərbaycan güləşçisi Avropa çempionu oldu - FOTO</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395650/bild-almanlarin-ekseriyyeti-bundesverin-olkeni-mudafie-ede-bileceyine-inanmir" title="Bild: Almanların əksəriyyəti Bundesverin ölkəni müdafiə edə biləcəyinə inanmır"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395650_5b182799e3131020b746387766ffac8b.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Bild: Almanların əksəriyyəti Bundesverin ölkəni müdafiə edə biləcəyinə inanmır</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395649/isvecrede-referendum-ehali-sayi-azaldilir-olke-sengenden-cixir" title="İsveçrədə referendum: Əhali sayı azaldılır, ölkə Şengendən çıxır"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395649_83a6896a2c6c9199493a37c27424f100.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>İsveçrədə referendum: Əhali sayı azaldılır, ölkə Şengendən çıxır</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395648/rusiya-kiyev-vilayetini-oresnik-ballistik-raketi-ile-vurub" title="Rusiya Kiyev vilayətini &quot;Oreşnik&quot; ballistik raketi ilə vurub"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395648_74430782330c025b53de0d0f4b076cd0.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Rusiya Kiyev vilayətini &quot;Oreşnik&quot; ballistik raketi ilə vurub</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395647/hindistana-yanacaq-dasiyan-tanker-fevraldan-beri-ilk-defe-hormuz-bogazindan-kecib" title="Hindistana yanacaq daşıyan tanker fevraldan bəri ilk dəfə Hörmüz boğazından keçib"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395647_c9ac31fb76d3ce0a7731b99541221203.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Hindistana yanacaq daşıyan tanker fevraldan bəri ilk dəfə Hörmüz boğazından keçib</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395646/pul-haqqinda-maraqli-faktlar-niye-eskinaslar-yuyulduqda-parcalanmir" title="Pul haqqında maraqlı faktlar: niyə əskinaslar yuyulduqda parçalanmır?"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395646_b9661fb6fe259310b88f23326f4bc07a.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Pul haqqında maraqlı faktlar: niyə əskinaslar yuyulduqda parçalanmır?</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395645/infarktdan-evvel-urek-nece-agriyir-neyi-bilmek-vacibdir" title="İnfarktdan əvvəl ürək necə ağrıyır, nəyi bilmək vacibdir?"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395645_0267ef7e721d72b955c5506722282f3e.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>İnfarktdan əvvəl ürək necə ağrıyır, nəyi bilmək vacibdir?</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395644/daily-mail-vens-2028-ci-il-prezident-seckilerinden-geri-cekile-biler" title="&quot;Daily Mail&quot;: Vens 2028-ci il prezident seçkilərindən geri çəkilə bilər"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395644_57a9f5c8ebc0a8e382dd773fd8b64c99.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>&quot;Daily Mail&quot;: Vens 2028-ci il prezident seçkilərindən geri çəkilə bilər</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395643/pentaqon-rehberi-herbcilerin-sayini-artirmagi-planlasdirir" title="Pentaqon rəhbəri hərbçilərin sayını artırmağı planlaşdırır"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395643_ba25dba0819f5d766d35b9154a4f58fd.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Pentaqon rəhbəri hərbçilərin sayını artırmağı planlaşdırır</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395642/qiyamet-gunu-radiosu-yeniden-efirde-sirli-mesaj-yayimlandi" title="&quot;Qiyamət günü radiosu&quot; yenidən efirdə: Sirli mesaj yayımlandı"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395642_8108d1b950487c32ec4c204eb54f46bf.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>&quot;Qiyamət günü radiosu&quot; yenidən efirdə: Sirli mesaj yayımlandı</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395641/sokedici-kesf-wi-fi-artiq-sadece-internet-deyil-insanlari-izleyen-sistem-hazirlanib" title="Şokedici kəşf: &quot;Wi-Fi&quot; artıq sadəcə internet deyil - İnsanları izləyən sistem hazırlanıb"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395641_5343dbe1a1c397efef86ea0bb87c5294.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Şokedici kəşf: &quot;Wi-Fi&quot; artıq sadəcə internet deyil - İnsanları izləyən sistem hazırlanıb</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395640/nuhun-gemisi-ziyaretcilere-acilir-ici-heyvanlarla-doludur" title="Nuhun gəmisi ziyarətçilərə açılır: İçi heyvanlarla doludur"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395640_084627c28976d54b3e0741d89d5f824b.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Nuhun gəmisi ziyarətçilərə açılır: İçi heyvanlarla doludur</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395639/60-yasdan-sonra-qadini-ne-qocaldir-bunlar-yasinizin-uste-10-il-getirir" title="60 yaşdan sonra qadını NƏ QOCALDIR? - Bunlar yaşınızın üstə 10 il gətirir"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395639_4a944dcc3b2a21d964cfcd9417f39338.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>60 yaşdan sonra qadını NƏ QOCALDIR? - Bunlar yaşınızın üstə 10 il gətirir</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395638/pakistan-tezlikle-abs-iran-danisiqlarina-ev-sahibliyi-edeceyine-umid-edir" title="Pakistan tezliklə ABŞ-İran danışıqlarına ev sahibliyi edəcəyinə ümid edir"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395638_96e600e2f00b3e6b89437421b0760b8a.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Pakistan tezliklə ABŞ-İran danışıqlarına ev sahibliyi edəcəyinə ümid edir</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395637/berdede-bas-veren-avtomobil-qezasinda-bir-nefer-olub" title="Bərdədə baş verən avtomobil qəzasında bir nəfər ölüb"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395637_5e841c0c15ceade210d3065c158d35b5.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Bərdədə baş verən avtomobil qəzasında bir nəfər ölüb</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395679/sakinlerin-nezerine-bezi-erazilerde-qaz-olmayacaq" title="Sakinlərin NƏZƏRİNƏ: Bəzi ərazilərdə qaz olmayacaq"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395679_38d5206bf45f9e0f86c0f327a33152a3.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Sakinlərin NƏZƏRİNƏ: Bəzi ərazilərdə qaz olmayacaq</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395678/intensiv-yagis-yagacaq-xeberdarliq" title="İntensiv yağış yağacaq - XƏBƏRDARLIQ"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395678_98301647c260594a43334b0185f557fd.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>İntensiv yağış yağacaq - XƏBƏRDARLIQ</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395636/avtomobil-bazarinda-yeni-bohran-sintetik-yaglara-limit-qoyuldu" title="Avtomobil bazarında yeni böhran: Sintetik yağlara limit qoyuldu"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395636_19beb1c00f099806a9cc55ae4cbe0e5f.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Avtomobil bazarında yeni böhran: Sintetik yağlara limit qoyuldu</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395635/her-gun-et-yemek-omru-uzadir-cin-alimlerinden-diqqetceken-arasdirma" title="Hər gün ət yemək ömrü uzadır? - Çin alimlərindən diqqətçəkən araşdırma"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395635_b6103a0a9100b9a473ea364ba4a3a603.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Hər gün ət yemək ömrü uzadır? - Çin alimlərindən diqqətçəkən araşdırma</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395677/hava-keskin-deyisir-bu-tarixedek-guclu-kulek-xeberdarligi" title="Hava kəskin dəyişir - Bu tarixədək GÜCLÜ KÜLƏK XƏBƏRDARLIĞI"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395677_9008baab34a06c5724d0c1d80a791d67.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Hava kəskin dəyişir - Bu tarixədək GÜCLÜ KÜLƏK XƏBƏRDARLIĞI</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395634/yumurtalarin-saxlanmasinda-en-cox-edilen-sehv" title="Yumurtaların saxlanmasında ən çox edilən SƏHV"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395634_d8d1b9bf59f465969b7bceefa6816a25.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Yumurtaların saxlanmasında ən çox edilən SƏHV</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395633/eltiler-arasinda-dava-zamani-6-yasli-usaq-bicaq-xesareti-aldi" title="Eltilər arasında dava zamanı 6 yaşlı uşaq bıçaq xəsarəti aldı"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395633_1ee5a2890c199867de02b91648a76a90.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Eltilər arasında dava zamanı 6 yaşlı uşaq bıçaq xəsarəti aldı</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395632/tramp-si-cinpinle-gorusunde-yaponiyanin-bas-nazirini-mudafie-edib" title="Tramp Si Cinpinlə görüşündə Yaponiyanın Baş nazirini müdafiə edib"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395632_b07bedf12fa7539734493272b9c5df10.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Tramp Si Cinpinlə görüşündə Yaponiyanın Baş nazirini müdafiə edib</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395631/levandovski-barselonanin-tarixinde-en-yaxsi-10-bombardir-sirasina-daxil-olub" title="Levandovski &quot;Barselona&quot;nın tarixində ən yaxşı 10 bombardir sırasına daxil olub"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395631_99f1e241c56fd62dd0a7a21c0d9050a7.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Levandovski &quot;Barselona&quot;nın tarixində ən yaxşı 10 bombardir sırasına daxil olub</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395630/pasinyan-axalkalaki-qars-demir-yolunun-fealiyyete-basladigini-bildirib" title="Paşinyan Axalkalaki-Qars dəmir yolunun fəaliyyətə başladığını bildirib"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395630_87a80524f77d77cc8d53a1fd3f5e3ee8.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Paşinyan Axalkalaki-Qars dəmir yolunun fəaliyyətə başladığını bildirib</h3></a> <span class="dttime">24 may</span></div><div class="nart"><a class="thumb_zoom" href="/395629/kaliforniyada-kimyevi-madde-sizmasi-ile-elaqedar-fovqelade-veziyyet-elan-edildi" title="Kaliforniyada kimyəvi maddə sızması ilə əlaqədar fövqəladə vəziyyət elan edildi"><div class="imgholder"><img loading="lazy" class="lazyload" data-src="/uploads/ss_395629_8bef132e86f75ebe484feb6f0b169247.jpg"  src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAA1JREFUGFdj+PLtx38ACaYD4rhyz+gAAAAASUVORK5CYII=" alt="."   /></div><h3>Kaliforniyada kimyəvi maddə sızması ilə əlaqədar fövqəladə vəziyyət elan edildi</h3></a> <span class="dttime">24 may</span></div></div><div class="pagination"><b>1</b>  <a href="/xeberler/?start=2">2</a> <a href="/xeberler/?start=3">3</a> <a href="/xeberler/?start=4">4</a>       <a href="/xeberler/?start=2">&gt;&gt;</a></div> </div> 
+<div id="rightblok" class="clearfix">
+<iframe src="https://sonxeber.az/banner/banner_62_69fc2ee534.html?1277564702"  width="240" height="400" frameborder="0" allowfullscreen="" scrolling="no" style="overflow: hidden !important; max-width: 100%;"></iframe>
+
+
+
+
+<a href="https://medialiteracy.media.gov.az/" rel="nofollow" target="_blank"><img src="/banner/mediainkisaf2.jpg" alt="." /></a><br/><br/><div class="blk blkpop clearfix"><div class="title_blk">Son xəbərlər</div> <div class="blk_as"><a href="/395505/etin-qiymeti-39-manata-qalxdi" title="Ətin qiyməti 39 manata QALXDI"><img src="/uploads/ss_395505_a4c902bc8c39e710955bb51b854bbb6b.jpg" alt="." class="lazyload" />  Ətin qiyməti 39 manata QALXDI</a><a href="/395525/badimcani-bele-bisirin-dadi-etden-daha-lezzetli-olur" title="Badımcanı belə bişirin, dadı ətdən daha ləzzətli olur"><img src="/uploads/ss_395525_badimcan_zc.jpg" alt="." class="lazyload" />  Badımcanı belə bişirin, dadı ətdən daha ləzzətli olur</a><a href="/395612/azerbaycanda-pensiyalarla-bagli-yenilik" title="Azərbaycanda pensiyalarla bağlı YENİLİK"><img src="/uploads/ss_395612_88710c70006be7c744d8469ca5f3947e.jpg" alt="." class="lazyload" />  Azərbaycanda pensiyalarla bağlı YENİLİK</a><a href="/395620/azerbaycanda-dehset-insanlar-evlerini-terk-etdi-ne-bas-verir" title="Azərbaycanda DƏHŞƏT - İnsanlar EVLƏRİNİ TƏRK ETDİ - Nə baş verir?"><img src="/uploads/ss_395620_52cd89b4e5e7f9162a50f41c550aa246.jpg" alt="." class="lazyload" />  Azərbaycanda DƏHŞƏT - İnsanlar EVLƏRİNİ TƏRK ETDİ - Nə baş verir?</a><a href="/395564/mayin-25-de-qaz-olmayacaq" title="Mayın 25-də QAZ OLMAYACAQ"><img src="/uploads/ss_395564_c5f483215adf516756cceb5cd026b0bc.jpg" alt="." class="lazyload" />  Mayın 25-də QAZ OLMAYACAQ</a><a href="/395489/ardicil-5-gun-is-olmayacaq" title="Ardıcıl 5 gün iş olmayacaq"><img src="/uploads/ss_395489_2ccaafcb9e739a7e3873ce1e9a558512.jpg" alt="." class="lazyload" />  Ardıcıl 5 gün iş olmayacaq</a><a href="/395611/bu-pullar-etibarsiz-sayilir-merkezi-bankdan-xeberdarliq" title="Bu pullar etibarsız sayılır - MƏRKƏZİ BANKDAN XƏBƏRDARLIQ"><img src="/uploads/ss_395611_da3d3c1a4f2eacbf3121b6594e83ef71.jpg" alt="." class="lazyload" />  Bu pullar etibarsız sayılır - MƏRKƏZİ BANKDAN XƏBƏRDARLIQ</a><a href="/395619/azerbaycanda-saygaclar-bu-cur-olacaq" title="Azərbaycanda sayğaclar BU CÜR OLACAQ"><img src="/uploads/ss_395619_19d84c0e9ac34cadd287fff6eb1be937.jpg" alt="." class="lazyload" />  Azərbaycanda sayğaclar BU CÜR OLACAQ</a><a href="/395613/etibarname-ile-masin-surenlerin-nezerine-gelen-aydan" title="Etibarnamə ilə maşın sürənlərin nəzərinə - GƏLƏN AYDAN..."><img src="/uploads/ss_395613_0da5b2a722a7a182cea01d389fcfebb6.jpg" alt="." class="lazyload" />  Etibarnamə ilə maşın sürənlərin nəzərinə - GƏLƏN AYDAN...</a><a href="/395528/eli-esedov-qerar-imzaladi-bu-sexslere-her-ay-100-manat-verilecek" title="Əli Əsədov QƏRAR İMZALADI - Bu şəxslərə hər ay 100 MANAT VERİLƏCƏK"><img src="/uploads/ss_395528_98aeb987df14d45835454a5204b8df98.jpg" alt="." class="lazyload" />  Əli Əsədov QƏRAR İMZALADI - Bu şəxslərə hər ay 100 MANAT VERİLƏCƏK</a><a href="/395486/bu-universitetin-qapisi-mohurlendi-telebeler-ayaga-qalxdi" title="Bu universitetin qapısı möhürləndi, tələbələr ayağa qalxdı"><img src="/uploads/ss_395486_img_0981.jpg" alt="." class="lazyload" />  Bu universitetin qapısı möhürləndi, tələbələr ayağa qalxdı</a><a href="/395606/maaslarin-odenis-qaydasi-deyisir-artiq-ayliq-verilmeyecek" title="Maaşların ödəniş QAYDASI DƏYİŞİR - Artıq aylıq verilməyəcək"><img src="/uploads/ss_395606_b19fcbcfe651e02d2059b3a0fe75a4f4.jpg" alt="." class="lazyload" />  Maaşların ödəniş QAYDASI DƏYİŞİR - Artıq aylıq verilməyəcək</a><a href="/395622/bu-gun-tebrizde-vefat-eden-konsulumuzun-fotosu" title="Bu gün Təbrizdə vəfat edən konsulumuzun FOTOSU"><img src="/uploads/ss_395622_edc85f85f8748b0de57b651f8eab33db.jpg" alt="." class="lazyload" />  Bu gün Təbrizdə vəfat edən konsulumuzun FOTOSU</a><a href="/395578/azerbaycanda-taninmis-idmanci-mesqden-sonra-oldu-foto" title="Azərbaycanda tanınmış idmançı məşqdən sonra öldü - FOTO"><img src="/uploads/ss_395578_6eb593f8615abda91781e902f1ecd36b.jpg" alt="." class="lazyload" />  Azərbaycanda tanınmış idmançı məşqdən sonra öldü - FOTO</a><a href="/395621/leyla-eliyeva-bakida-toyda-video" title="Leyla Əliyeva Bakıda toyda - VİDEO"><img src="/uploads/ss_395621_fd7c1606c2f0d23a750f06c9fd96a69f.jpg" alt="." class="lazyload" />  Leyla Əliyeva Bakıda toyda - VİDEO</a></div></div><br/>
+
+
+<div class="blk_rek">
+<a href="https://unvan.az" title="Pulsuz elanlar sayti" onclick="myga('sonxeber-unvanright')">Unvan.az elanlar sayti</a> </div>
+
+<div class="blk_rekinline">
+<a title="VIPEMLAK.az  Dasinmaz emlak elanlari , ev alqi satqisi" href="https://vipemlak.az/" target="_blank"><img alt="vipemlak.az"  src="/banner/vipemlak_menu4_2.png"></a> </div>
+
+<div class="blk_rekinline">
+<a title="turlar Azerbaycan, Daxili turlar, xarici turlar, tur paketler, Ucuz turlar" href="https://turlar.az" target="_blank">turlar.az</a> <br/>
+</div>
+</div>
+
+
+<a href="#" id="scrollToTop"></a>
+</div>
+<footer id="footer"><div class="container">
+
+<a class="logo" href="/"><img src="/logo2.png?2" /></a>
+
+Sonxeber.az Azərbaycanın xəbər saytı, Azərbaycandan ən son xəbərləri yayımlayır. Iqtisadi xeberler, Şou biznes xəbərləri , siyasi xeberler, kriminal xeberler, idman xeberleri, muharibe xeberleri, maliyye xeberleri, <a href="/son-xeberler" target="_blank"  title="son xeberler" >son xeberler</a> təqdim edən ictimai-sosial saytdır. xeberler bu gun 2022<br />
+Email: info [ @ ] sonxeber.az<br />
+<br> <b><a href="/contact">Bizimlə əlaqə</a></b>
+<a href="/page/policy-xeber">Redaksiya siyasəti</a>
+
+
+ <br>
+<div class="clear"><br>
+
+<script>document.write("<a href='//www.liveinternet.ru/click' "+
+"target=_blank><img src='//counter.yadro.ru/hit?t26.6;r"+
+escape(document.referrer)+((typeof(screen)=="undefined")?"":
+";s"+screen.width+"*"+screen.height+"*"+(screen.colorDepth?
+screen.colorDepth:screen.pixelDepth))+";u"+escape(document.URL)+
+";"+Math.random()+ "' alt='' border='0' width='88' height='15'><\/a>");</script> 0.014 | a: 0</div>
+</div> 
+</footer>
+</div>
+
+
+<div id="insertmid" data-target="article p" data-class="banner3" data-eq="2" data-timeout="2" data-url="https://azjob.az" data-img="/banner/azjob1000_2.png" style="display: none;"></div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script title2="media inkisaf">
+window.digitalks=window.digitalks||new function(){var t=this;t._e=[],t._c={},t.config=function(c){var i;t._c=c,t._c.script_id?((i=document.createElement("script")).src="//data.digitalks.az/v1/scripts/"+t._c.script_id+"/track.js?&cb="+Math.random(),i.async=! 0,document.head.appendChild(i)):console.error("digitalks: script_id cannot be empty!")};["track","identify"].forEach(function(c){t[c]=function(){t._e.push([c]. concat(Array.prototype.slice.call(arguments,0)))}})}
+digitalks.config({ script_id: "88ea3717-6006-4804-b229-9a2f6566cb37", page_url: location.href, referrer: document.referrer
+}) </script>
+</body></html>

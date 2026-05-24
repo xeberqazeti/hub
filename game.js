@@ -38,12 +38,9 @@ onValue(connectedRef, (snap) => {
 const gameState = {
     currentPlayer: null,
     playerId: null,
-    gameStarted: false
+    gameStarted: false,
+    roomName: null
 };
-
-// Interval references for ghost player detection
-let heartbeatInterval = null;
-let ghostCheckInterval = null;
 
 // Animal names pool
 const animalNames = [
@@ -77,6 +74,7 @@ const selectWordle = document.getElementById('select-wordle');
 const backToHubBtn = document.getElementById('back-to-hub-btn');
 
 const playerNameInput = document.getElementById('player-name');
+const roomNameInput = document.getElementById('room-name');
 const joinBtn = document.getElementById('join-btn');
 const playersWaiting = document.getElementById('players-waiting');
 const playersList = document.getElementById('players-list');
@@ -88,6 +86,7 @@ const resetLobbyBtn = document.getElementById('reset-lobby-btn');
 const newGameBtn = document.getElementById('new-game-btn');
 const joinSection = document.getElementById('join-section');
 const lobbyControls = document.getElementById('lobby-controls');
+const lobbyControlsBottom = document.getElementById('lobby-controls-bottom');
 const categorySelect = document.getElementById('category-select');
 
 // Ensure essential elements exist
@@ -95,12 +94,14 @@ if (!joinSection || !lobbyControls) {
     console.error('Critical DOM elements missing!');
 }
 
-// Room reference (single room for all players)
-const roomRef = ref(database, 'game/room');
-const playersRef = ref(database, 'game/room/players');
-const gameStatusRef = ref(database, 'game/room/status');
-const hostRef = ref(database, 'game/room/host');
-const categoryRef = ref(database, 'game/room/category');
+// Room reference variables (dynamically set when joining)
+let roomRef = null;
+let playersRef = null;
+let gameStatusRef = null;
+
+// Firebase listener cleanup functions
+let unsubscribePlayers = null;
+let unsubscribeStatus = null;
 
 // Event Listeners
 if (joinBtn) joinBtn.addEventListener('click', joinGame);
@@ -109,20 +110,22 @@ if (playerNameInput) {
         if (e.key === 'Enter') joinGame();
     });
 }
-// Category change (Host only - validated in listener but good to have)
+if (roomNameInput) {
+    roomNameInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') joinGame();
+    });
+}
+// Category change (Player's vote)
 if (categorySelect) {
     categorySelect.addEventListener('change', () => {
-        if (gameState.hostId === gameState.playerId) {
-            set(categoryRef, categorySelect.value);
-        } else {
-            // Revert if non-host tries to change (UI should disable, but safety net)
-            get(categoryRef).then(snap => {
-                categorySelect.value = snap.val() || 'animals';
+        if (gameState.playerId && gameState.roomName) {
+            update(ref(database, `game/rooms/${gameState.roomName}/players/${gameState.playerId}`), {
+                categoryVote: categorySelect.value
             });
         }
     });
 }
-// Start and Reset only work if you are host (UI prevents clicking, but good to check state too)
+// Start and Reset for all
 if (startGameBtn) startGameBtn.addEventListener('click', startGame);
 if (leaveBtn) leaveBtn.addEventListener('click', leaveGame);
 if (newGameBtn) newGameBtn.addEventListener('click', resetGame);
@@ -154,149 +157,54 @@ if (backToHubBtn) {
     });
 }
 
-// Listen for players changes
-onValue(playersRef, (snapshot) => {
-    const players = snapshot.val() || {};
-    updatePlayersList(players);
+function setupRoomListeners() {
+    // Listen for players changes
+    unsubscribePlayers = onValue(playersRef, (snapshot) => {
+        const players = snapshot.val() || {};
 
-    // Check if host exists, if not and we are in lobby, maybe claim it?
-    // Self-healing: Check for zombie host
-    if (!gameState.gameStarted && gameState.playerId && Object.keys(players).length > 0) {
-        // Check if the current known host is actually in the room
-        const currentHostId = gameState.hostId;
-        const hostExistsInRoom = currentHostId && players[currentHostId];
-
-        if (!hostExistsInRoom) {
-            console.log('⚠️ Host appears to be missing/zombie. Checking for promotion...');
-
-            // Find oldest player
-            const sortedPlayers = Object.entries(players).sort((a, b) => a[1].joinedAt - b[1].joinedAt);
-            const oldestPlayerId = sortedPlayers[0][0];
-
-            if (oldestPlayerId === gameState.playerId) {
-                console.log('👑 Promoting myself to host (Oldest Player)');
-                set(hostRef, gameState.playerId);
-            }
-        }
-    }
-
-    // Check if we are host and need to enable buttons
-    checkHostStatus(players);
-});
-
-// Listen for Host changes to update UI
-onValue(hostRef, (snapshot) => {
-    gameState.hostId = snapshot.val();
-    checkHostStatus();
-
-    // Re-render player list to show new host icon
-    get(playersRef).then(snap => updatePlayersList(snap.val() || {}));
-});
-
-// Listen for game status changes
-onValue(gameStatusRef, (snapshot) => {
-    const status = snapshot.val();
-    if (status === 'started' && !gameState.gameStarted) {
-        gameState.gameStarted = true;
-        showGameScreen();
-    } else if (status === 'lobby') {
-        gameState.gameStarted = false;
-    }
-});
-
-// Listen for Category changes
-onValue(categoryRef, (snapshot) => {
-    const category = snapshot.val() || 'animals';
-    if (categorySelect) categorySelect.value = category;
-});
-
-// Check if current player is host and update UI
-function checkHostStatus(currentPlayers = null) {
-    const isHost = gameState.playerId && gameState.hostId === gameState.playerId;
-    const isLobby = !gameState.gameStarted;
-
-    // Ghost Check Logic (Host Only)
-    if (isHost) {
-        if (!ghostCheckInterval) {
-            ghostCheckInterval = setInterval(async () => {
-                try {
-                    const snap = await get(playersRef);
-                    const players = snap.val();
-                    if (!players) return;
-
-                    const now = Date.now();
-                    for (const [id, player] of Object.entries(players)) {
-                        // If no ping for 15 seconds, or ping is missing, assume ghost
-                        const isStale = player.lastPing === undefined || (now - player.lastPing) > 15000;
-                        if (isStale) {
-                            console.log(`👻 Removing ghost player: ${player.name} (${id})`);
-                            await remove(ref(database, `game/room/players/${id}`));
-                        }
-                    }
-                } catch (e) {
-                    console.error('Error during ghost check:', e);
-                }
-            }, 10000);
-        }
-    } else {
-        if (ghostCheckInterval) {
-            clearInterval(ghostCheckInterval);
-            ghostCheckInterval = null;
-        }
-    }
-
-    if (isHost && isLobby) {
-        startGameBtn.style.display = 'inline-block';
-        resetLobbyBtn.style.display = 'inline-block';
-        if (categorySelect) categorySelect.disabled = false;
-
-        // Use provided players or fetch them
-        if (currentPlayers) {
-            const count = Object.keys(currentPlayers).length;
-            startGameBtn.disabled = count < 2;
-        } else {
-            get(playersRef).then(snap => {
-                const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-                startGameBtn.disabled = count < 2;
-            });
+        // If we were removed from the room (kicked by lobby reset), clean up
+        if (gameState.playerId && !players[gameState.playerId]) {
+            console.warn('You have been removed from the lobby.');
+            resetLocalState();
+            lobbyScreen.classList.remove('active');
+            gameScreen.classList.remove('active');
+            selectionScreen.classList.add('active');
+            return;
         }
 
-        // Hide "Waiting" text if it was used for non-hosts
-        const waitingMsg = document.getElementById('waiting-for-host-msg');
-        if (waitingMsg) waitingMsg.style.display = 'none';
+        updatePlayersList(players);
 
-    } else {
-        // Non-host or game started
-        startGameBtn.style.display = 'none';
-        resetLobbyBtn.style.display = 'none';
-        if (categorySelect) categorySelect.disabled = true;
+        // Update Start Game button state
+        const playerCount = Object.keys(players).length;
+        if (startGameBtn) startGameBtn.disabled = playerCount < 2;
+    });
 
-        // Show "Waiting for host" if in lobby and joined
-        if (isLobby && gameState.playerId) {
-            let waitingMsg = document.getElementById('waiting-for-host-msg');
-            if (!waitingMsg) {
-                waitingMsg = document.createElement('p');
-                waitingMsg.id = 'waiting-for-host-msg';
-                waitingMsg.className = 'waiting-text';
-                waitingMsg.innerText = 'Waiting for Host to start game...';
-                const container = document.querySelector('#lobby-controls .button-group');
-                if (container) container.parentNode.insertBefore(waitingMsg, container);
-            }
-            waitingMsg.style.display = 'block';
+    // Listen for game status changes
+    unsubscribeStatus = onValue(gameStatusRef, (snapshot) => {
+        const status = snapshot.val();
+        if (status === 'started' && !gameState.gameStarted) {
+            gameState.gameStarted = true;
+            showGameScreen();
+        } else if (status === 'lobby' && gameState.gameStarted) {
+            gameState.gameStarted = false;
+            // Switch all clients back to lobby screen
+            gameScreen.classList.remove('active');
+            lobbyScreen.classList.add('active');
+        } else if (status === 'lobby') {
+            gameState.gameStarted = false;
         }
-    }
-
+    });
 }
-
-
-// Join game function - No changes needed to initialization, but ensure default category
-get(categoryRef).then(snap => {
-    if (!snap.exists()) set(categoryRef, 'animals');
-});
-
-// Join game function (EXISTING CODE BELOW...)
+// Join game function
 async function joinGame() {
+    const roomName = roomNameInput ? roomNameInput.value.trim().toLowerCase() : '';
     const playerName = playerNameInput.value.trim();
+
+    if (!roomName) {
+        alert('Please enter a room name!');
+        if (roomNameInput) roomNameInput.focus();
+        return;
+    }
 
     if (!playerName) {
         alert('Please enter your name!');
@@ -310,53 +218,43 @@ async function joinGame() {
     }
 
     try {
-        console.log('Joining game...');
+        console.log(`Joining room: ${roomName}...`);
+        
+        gameState.roomName = roomName;
+        roomRef = ref(database, `game/rooms/${roomName}`);
+        playersRef = ref(database, `game/rooms/${roomName}/players`);
+        gameStatusRef = ref(database, `game/rooms/${roomName}/status`);
+
+        // Initialize status if needed
+        const statusSnap = await get(gameStatusRef);
+        if (!statusSnap.exists()) {
+            await set(gameStatusRef, 'lobby');
+        }
+
         const newPlayerRef = push(playersRef);
         gameState.playerId = newPlayerRef.key;
         gameState.currentPlayer = {
             id: gameState.playerId,
             name: playerName,
+            categoryVote: categorySelect ? categorySelect.value : 'capitals',
             role: null,
-            joinedAt: Date.now(),
-            lastPing: Date.now()
+            joinedAt: Date.now()
         };
 
         await set(newPlayerRef, gameState.currentPlayer);
 
-        // Start heartbeat to prevent being marked as a ghost
-        if (heartbeatInterval) clearInterval(heartbeatInterval);
-        heartbeatInterval = setInterval(() => {
-            if (gameState.playerId) {
-                update(ref(database, `game/room/players/${gameState.playerId}`), {
-                    lastPing: Date.now()
-                }).catch(e => console.error("Heartbeat failed", e));
-            }
-        }, 5000);
-
-        // Register server-side cleanup: Firebase will auto-remove this player on disconnect
-        onDisconnect(newPlayerRef).remove();
-
-        // Check if there is a host, if not, claim it
-        // OR if we are the only player, claim it (overwrites stale host)
-        const playersSnap = await get(playersRef);
-        const currentPlayers = playersSnap.val();
-        const playerCount = currentPlayers ? Object.keys(currentPlayers).length : 0;
-
-        const hostSnap = await get(hostRef);
-        if (!hostSnap.exists() || playerCount === 1) {
-            await set(hostRef, gameState.playerId);
-            gameState.hostId = gameState.playerId;
-            console.log('👑 You are now the Host!');
-
-            // Force reset status to lobby if we are the only one (fixes stale 'started' state)
-            await set(gameStatusRef, 'lobby');
-        }
-
         console.log('✅ Joined game!');
+        
+        setupRoomListeners();
 
         // Update UI state
         if (joinSection) joinSection.style.display = 'none';
         if (lobbyControls) lobbyControls.style.display = 'block';
+        if (lobbyControlsBottom) lobbyControlsBottom.style.display = 'block';
+
+        // Hide "Waiting" text if it exists
+        const waitingMsg = document.getElementById('waiting-for-host-msg');
+        if (waitingMsg) waitingMsg.style.display = 'none';
 
     } catch (error) {
         console.error('Error joining game:', error);
@@ -375,14 +273,12 @@ function updatePlayersList(players) {
     playerArray.sort((a, b) => a.joinedAt - b.joinedAt);
 
     // Update lobby list
-    playersList.innerHTML = playerArray.map(player => {
-        const isHost = player.id === gameState.hostId;
-        return `
+    playersList.innerHTML = playerArray.map(player => `
         <div class="player-item">
-            <span class="player-icon">${isHost ? '👑' : '👤'}</span>
-            <span class="player-name">${escapeHtml(player.name)}${isHost ? ' (Host)' : ''}</span>
+            <span class="player-icon">👤</span>
+            <span class="player-name">${escapeHtml(player.name)}</span>
         </div>
-    `}).join('');
+    `).join('');
 
     // Update game screen list if game started
     if (gameState.gameStarted) {
@@ -397,13 +293,9 @@ function updatePlayersList(players) {
 
 // Start game function
 async function startGame() {
-    // Double check host
-    if (gameState.hostId !== gameState.playerId) return;
-
     try {
         const snapshot = await get(playersRef);
         const players = snapshot.val();
-
 
         if (!players || Object.keys(players).length < 2) {
             console.warn('❌ Not enough players');
@@ -411,19 +303,25 @@ async function startGame() {
             return;
         }
 
-        // Get Selected Category
-        const categorySnap = await get(categoryRef);
-        const category = categorySnap.val() || 'animals';
-        const wordPool = category === 'capitals' ? capitals : animalNames;
+        // Tally category votes
+        let votes = { animals: 0, capitals: 0 };
+        Object.values(players).forEach(p => {
+            const vote = p.categoryVote || 'capitals';
+            votes[vote] = (votes[vote] || 0) + 1;
+        });
+
+        // Determine winning category
+        let winningCategory = 'capitals';
+        if (votes.animals > votes.capitals) {
+            winningCategory = 'animals';
+        }
+
+        const wordPool = winningCategory === 'capitals' ? capitals : animalNames;
 
         // Assign roles
         const playerIds = Object.keys(players);
         const spyIndex = Math.floor(Math.random() * playerIds.length);
-
-        // Pick ONE common item logic
         const commonWord = wordPool[Math.floor(Math.random() * wordPool.length)];
-
-        // Assign roles to each player
 
         const updates = {};
         playerIds.forEach((playerId, index) => {
@@ -434,11 +332,9 @@ async function startGame() {
             }
         });
 
-        // Set game status to started
         updates['status'] = 'started';
-
+        updates['category'] = winningCategory;
         await update(roomRef, updates);
-
 
     } catch (error) {
         console.error('Error starting game:', error);
@@ -449,7 +345,7 @@ async function startGame() {
 // Show game screen
 async function showGameScreen() {
     try {
-        const snapshot = await get(ref(database, `game/room/players/${gameState.playerId}`));
+        const snapshot = await get(ref(database, `game/rooms/${gameState.roomName}/players/${gameState.playerId}`));
         const playerData = snapshot.val();
 
         if (playerData && playerData.role) {
@@ -472,6 +368,24 @@ async function showGameScreen() {
                 `;
             }
 
+            // Fetch category to update instructions
+            const roomSnap = await get(ref(database, `game/rooms/${gameState.roomName}/category`));
+            const category = roomSnap.val() || 'capitals';
+            
+            const categoryDisplay = document.getElementById('game-category-display');
+            if (categoryDisplay) {
+                categoryDisplay.innerText = `Category: ${category === 'animals' ? '🐶 Animals' : '🏛️ Capitals'}`;
+            }
+            
+            const instructionCivilian = document.getElementById('instruction-civilian');
+            if (instructionCivilian) {
+                if (category === 'animals') {
+                    instructionCivilian.innerHTML = "<strong>If you're an animal:</strong> Discuss and figure out who the spy is!";
+                } else if (category === 'capitals') {
+                    instructionCivilian.innerHTML = "<strong>If you're a city:</strong> Discuss and figure out who the spy is!";
+                }
+            }
+
             // Switch screens
             lobbyScreen.classList.remove('active');
             gameScreen.classList.add('active');
@@ -487,29 +401,10 @@ async function showGameScreen() {
 
 // Leave game function
 async function leaveGame() {
-    if (gameState.playerId) {
+    if (gameState.playerId && gameState.roomName) {
         try {
-            // Cancel the onDisconnect hook since we're leaving cleanly
-            const playerRef = ref(database, `game/room/players/${gameState.playerId}`);
-            await onDisconnect(playerRef).cancel();
+            const playerRef = ref(database, `game/rooms/${gameState.roomName}/players/${gameState.playerId}`);
             await remove(playerRef);
-
-            // Host Migration Logic
-            if (gameState.hostId === gameState.playerId) {
-                const snap = await get(playersRef);
-                const players = snap.val();
-                if (players && Object.keys(players).length > 0) {
-                    // Find oldest player
-                    const sortedPlayers = Object.entries(players).sort((a, b) => a[1].joinedAt - b[1].joinedAt);
-                    const newHostId = sortedPlayers[0][0];
-                    await set(hostRef, newHostId);
-                } else {
-                    // No players left
-                    await set(hostRef, null);
-                    await set(gameStatusRef, 'lobby'); // Reset status if empty
-                }
-            }
-
             resetLocalState();
         } catch (error) {
             console.error('Error leaving game:', error);
@@ -519,11 +414,7 @@ async function leaveGame() {
 
 // Reset game function
 async function resetGame() {
-    // Only host can reset
-    if (gameState.hostId !== gameState.playerId) return;
-
     try {
-        // Reset room to lobby state
         await update(roomRef, {
             status: 'lobby'
         });
@@ -539,11 +430,6 @@ async function resetGame() {
             await update(roomRef, updates);
         }
 
-        // Return to lobby
-        gameScreen.classList.remove('active');
-        lobbyScreen.classList.add('active');
-        gameState.gameStarted = false;
-
     } catch (error) {
         console.error('Error resetting game:', error);
         alert('Failed to reset game. Please try again.');
@@ -554,18 +440,11 @@ async function resetGame() {
 async function resetLobby() {
     try {
         console.log('Resetting lobby...');
-
-        // Delete the entire players node
         await remove(playersRef);
-        await set(hostRef, null); // Clear host
-
-        // Ensure status is lobby
         await update(roomRef, {
             status: 'lobby'
         });
-
         console.log('✅ Lobby reset successful');
-
     } catch (error) {
         console.error('Error resetting lobby:', error);
         alert('Failed to reset lobby: ' + error.message);
@@ -574,32 +453,37 @@ async function resetLobby() {
 
 // Reset local state
 function resetLocalState() {
-    if (heartbeatInterval) clearInterval(heartbeatInterval);
-    if (ghostCheckInterval) clearInterval(ghostCheckInterval);
-    heartbeatInterval = null;
-    ghostCheckInterval = null;
+    if (unsubscribePlayers) {
+        unsubscribePlayers();
+        unsubscribePlayers = null;
+    }
+    if (unsubscribeStatus) {
+        unsubscribeStatus();
+        unsubscribeStatus = null;
+    }
 
     gameState.currentPlayer = null;
     gameState.playerId = null;
     gameState.gameStarted = false;
+    gameState.roomName = null;
+
+    roomRef = null;
+    playersRef = null;
+    gameStatusRef = null;
 
     playerNameInput.value = '';
+    if (roomNameInput) roomNameInput.value = '';
 
     // UI Reset
     if (joinSection) joinSection.style.display = 'block';
     if (lobbyControls) lobbyControls.style.display = 'none';
+    if (lobbyControlsBottom) lobbyControlsBottom.style.display = 'none';
 }
 
 // Clean up on page unload
 window.addEventListener('beforeunload', () => {
-    if (gameState.playerId) {
-        // We can't easily do async await here reliably, but we try.
-        // For host migration on close, we rely on checking active players or periodic cleanup,
-        // but for this simple app, we can try to trigger leave.
-        // Ideally, we'd use onDisconnect() from Firebase.
-
-        // Basic cleanup attempt
-        remove(ref(database, `game/room/players/${gameState.playerId}`));
+    if (gameState.playerId && gameState.roomName) {
+        remove(ref(database, `game/rooms/${gameState.roomName}/players/${gameState.playerId}`));
     }
 });
 
