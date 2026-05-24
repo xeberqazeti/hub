@@ -19,9 +19,9 @@ export const cities = [
     // South America
     'Rio de Janeiro', 'São Paulo', 'Buenos Aires', 'Santiago', 'Lima', 'Bogotá', 'Caracas', 'Medellín', 'Quito', 'La Paz',
     // Europe
-    'London', 'Paris', 'Rome', 'Berlin', 'Madrid', 'Barcelona', 'Amsterdam', 'Vienna', 'Prague', 'Budapest', 'Athens', 'Dublin', 'Lisbon', 'Stockholm', 'Oslo', 'Copenhagen', 'Helsinki', 'Warsaw', 'Moscow', 'St. Petersburg', 'Kyiv', 'Istanbul', 'Milan', 'Venice', 'Florence', 'Munich', 'Frankfurt', 'Zurich', 'Geneva', 'Brussels', 'Edinburgh',
+    'London', 'Paris', 'Rome', 'Berlin', 'Madrid', 'Barcelona', 'Amsterdam', 'Rotterdam', 'The Hague', 'Utrecht', 'Eindhoven', 'Maastricht', 'Vienna', 'Prague', 'Budapest', 'Athens', 'Dublin', 'Lisbon', 'Stockholm', 'Oslo', 'Copenhagen', 'Helsinki', 'Warsaw', 'Moscow', 'St. Petersburg', 'Kyiv', 'Istanbul', 'Izmir', 'Antalya', 'Bursa', 'Adana', 'Gaziantep', 'Konya', 'Milan', 'Venice', 'Florence', 'Munich', 'Frankfurt', 'Cologne', 'Düsseldorf', 'Dortmund', 'Essen', 'Duisburg', 'Bochum', 'Wuppertal', 'Bonn', 'Münster', 'Zurich', 'Geneva', 'Brussels', 'Edinburgh',
     // Asia
-    'Tokyo', 'Kyoto', 'Osaka', 'Beijing', 'Shanghai', 'Hong Kong', 'Taipei', 'Seoul', 'Busan', 'Bangkok', 'Phuket', 'Singapore', 'Kuala Lumpur', 'Jakarta', 'Bali', 'Manila', 'Ho Chi Minh City', 'Hanoi', 'Mumbai', 'New Delhi', 'Bangalore', 'Dubai', 'Abu Dhabi', 'Riyadh', 'Doha', 'Jerusalem', 'Tel Aviv', 'Tehran', 'Beirut', 'Amman',
+    'Tokyo', 'Kyoto', 'Osaka', 'Beijing', 'Shanghai', 'Hong Kong', 'Taipei', 'Seoul', 'Busan', 'Bangkok', 'Phuket', 'Singapore', 'Kuala Lumpur', 'Jakarta', 'Bali', 'Manila', 'Ho Chi Minh City', 'Hanoi', 'Mumbai', 'New Delhi', 'Bangalore', 'Dubai', 'Abu Dhabi', 'Riyadh', 'Doha', 'Jerusalem', 'Tel Aviv', 'Tehran', 'Beirut', 'Amman', 'Baku', 'Ganja', 'Sumqayit', 'Lankaran', 'Gabala', 'Shaki',
     // Africa
     'Cairo', 'Marrakech', 'Casablanca', 'Nairobi', 'Cape Town', 'Johannesburg', 'Lagos', 'Accra', 'Dakar', 'Addis Ababa',
     // Oceania

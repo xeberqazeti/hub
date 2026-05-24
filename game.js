@@ -359,10 +359,12 @@ function updatePlayersList(players) {
 // Start game function
 async function startGame() {
     try {
-        const snapshot = await get(playersRef);
-        const players = snapshot.val();
+        const roomSnap = await get(roomRef);
+        const roomData = roomSnap.val() || {};
+        const players = roomData.players || {};
+        const previousSpy = roomData.previousSpy || null;
 
-        if (!players || Object.keys(players).length < 2) {
+        if (Object.keys(players).length < 2) {
             console.warn('❌ Not enough players');
             alert('Need at least 2 players to start!');
             return;
@@ -392,7 +394,17 @@ async function startGame() {
 
         // Assign roles
         const playerIds = Object.keys(players);
-        const spyIndex = Math.floor(Math.random() * playerIds.length);
+        let spyIndex = Math.floor(Math.random() * playerIds.length);
+        
+        // Prevent same player from being spy twice in a row (if there are >1 players)
+        if (playerIds.length > 1 && previousSpy) {
+            while (playerIds[spyIndex] === previousSpy) {
+                spyIndex = Math.floor(Math.random() * playerIds.length);
+            }
+        }
+        
+        const currentSpyId = playerIds[spyIndex];
+
         const commonWord = wordPool[Math.floor(Math.random() * wordPool.length)];
 
         const updates = {};
@@ -406,6 +418,7 @@ async function startGame() {
 
         updates['status'] = 'started';
         updates['category'] = winningCategory;
+        updates['previousSpy'] = currentSpyId;
         await update(roomRef, updates);
 
     } catch (error) {
