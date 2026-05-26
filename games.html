@@ -48,6 +48,15 @@
                         <span class="badge">New</span>
                     </div>
                 </div>
+
+                <div class="game-card" id="select-password">
+                    <div class="game-card-icon">🔑</div>
+                    <div class="game-card-content">
+                        <h3>Password</h3>
+                        <p>Join a room, match & highlight Azerbaijani nouns!</p>
+                        <span class="badge">New</span>
+                    </div>
+                </div>
             </div>
         </div> <!-- Selection Screen -->
 
@@ -342,10 +351,79 @@
             </div>
         </div>
 
+        <!-- Password Lobby Screen -->
+        <div id="password-lobby-screen" class="screen">
+            <div class="game-header">
+                <button id="password-back-btn" class="back-btn">← Back to Hub</button>
+                <h1 class="game-title">🔑 Password Game</h1>
+                <p class="game-subtitle">Join a room and match Azerbaijani nouns!</p>
+            </div>
+
+            <div id="password-join-section" class="card">
+                <div class="input-group">
+                    <label for="password-room-name">Enter Room Name</label>
+                    <input type="text" id="password-room-name" placeholder="e.g. secret123" maxlength="15" autocomplete="off">
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label for="password-player-name">Enter Your Name</label>
+                    <input type="text" id="password-player-name" placeholder="Your name..." maxlength="20" autocomplete="off">
+                </div>
+                <button id="password-join-btn" class="btn btn-primary" style="margin-top: 1.5rem;">Join Room</button>
+            </div>
+
+            <!-- Active Rooms Section -->
+            <div id="password-active-rooms-section" class="card" style="display: none;">
+                <h3>Active Rooms</h3>
+                <p class="game-subtitle" style="margin-bottom: 1rem; font-size: 0.9rem;">Click a room to join instantly!</p>
+                <div id="password-active-rooms-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+            </div>
+
+            <div id="password-lobby-section" class="card" style="display: none;">
+                <h3>Players in Lobby</h3>
+                <div id="password-players-list" class="players-list" style="margin-top: 1rem;"></div>
+                
+                <div class="button-group" style="margin-top: 1.5rem;">
+                    <button id="password-start-btn" class="btn btn-success" style="display: none;">Start Game</button>
+                    <button id="password-leave-btn" class="btn btn-secondary">Leave Lobby</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Password Game Screen -->
+        <div id="password-game-screen" class="screen">
+            <div class="game-header">
+                <h1 class="game-title">🔑 Password</h1>
+                <p class="game-subtitle">Click nouns to highlight/select them. Both players must agree to skip!</p>
+            </div>
+
+            <div class="card" style="text-align: center;">
+                <h2 style="margin-bottom: 1.5rem; font-size: 1.5rem; color: var(--text-primary);">Azerbaijani Nouns</h2>
+                <div id="password-nouns-grid" class="nouns-grid" style="margin-bottom: 2rem;">
+                    <!-- 5 nouns will be injected here -->
+                </div>
+                
+                <div style="display: flex; justify-content: space-around; gap: 1rem;">
+                    <button id="password-skip-btn" class="btn btn-secondary" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span>⏭️ Skip Nouns</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>Room Players</h3>
+                <div id="password-game-players-list" class="players-list"></div>
+            </div>
+
+            <div class="button-group" style="margin-top: 1.5rem;">
+                <button id="password-quit-btn" class="btn btn-secondary">Quit Game</button>
+            </div>
+        </div>
+
         <!-- Firebase SDK -->
         <script type="module" src="game.js?v=1.4"></script>
         <script type="module" src="wordle.js?v=1.0"></script>
         <script type="module" src="scribble.js?v=1.0"></script>
+        <script type="module" src="password.js?v=1.0"></script>
         
         <script>
             const originalTitle = document.title;
