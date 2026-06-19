@@ -57,6 +57,33 @@
                         <span class="badge">New</span>
                     </div>
                 </div>
+
+                <div class="game-card" id="select-crossword">
+                    <div class="game-card-icon">📝</div>
+                    <div class="game-card-content">
+                        <h3>Crossword</h3>
+                        <p>Solve Azerbaijani crosswords!</p>
+                        <span class="badge" style="background: var(--success);">Solo</span>
+                    </div>
+                </div>
+
+                <div class="game-card" id="select-storyboard">
+                    <div class="game-card-icon">🎬</div>
+                    <div class="game-card-content">
+                        <h3>Storyboarding</h3>
+                        <p>Sketch and write script underneath!</p>
+                        <span class="badge" style="background: var(--text-secondary);">Local</span>
+                    </div>
+                </div>
+
+                <div class="game-card" id="select-scrabble">
+                    <div class="game-card-icon">🔠</div>
+                    <div class="game-card-content">
+                        <h3>Scrabble</h3>
+                        <p>Multiplayer Azerbaijani Scrabble.</p>
+                        <span class="badge">New</span>
+                    </div>
+                </div>
             </div>
         </div> <!-- Selection Screen -->
 
@@ -467,11 +494,290 @@
             </div>
         </div>
 
+        <!-- Storyboard Screen -->
+        <div id="storyboard-screen" class="screen storyboard-theme">
+            <div class="storyboard-header">
+                <button id="storyboard-back-btn" class="back-btn" style="color: black; border-color: black; margin-bottom: 0;">← Back to Hub</button>
+                <div style="display: flex; align-items: center; gap: 1rem; flex: 1;">
+                    <h1 style="color: black; margin: 0; font-size: 2rem; white-space: nowrap;">Storyboarding</h1>
+                    <input type="text" id="storyboard-title" placeholder="Enter board title..." style="flex: 1; max-width: 400px; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px; font-size: 1rem; background: white; color: black;">
+                </div>
+                <button id="storyboard-save-btn" class="btn btn-primary" style="width: auto; padding: 0.5rem 1.5rem; margin: 0;">Save</button>
+            </div>
+            
+            <div class="storyboard-layout">
+                <!-- Sidebar for saved boards -->
+                <div class="storyboard-sidebar">
+                    <h3 style="margin-bottom: 1rem;">Saved Boards</h3>
+                    <div id="saved-boards-list" style="display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto;">
+                        <p style="color: #666; font-style: italic;">No saved boards.</p>
+                    </div>
+                </div>
+
+                <!-- Main drawing area -->
+                <div class="storyboard-container">
+                    <div class="card" style="padding: 0; overflow: hidden; background: white; border: 1px solid #ddd; box-shadow: none; margin-bottom: 0;">
+                        <canvas id="storyboard-canvas" width="1000" height="600" style="background: white; cursor: crosshair; width: 100%; height: auto; display: block;"></canvas>
+                        
+                        <div class="drawing-tools" style="background: #f9f9f9; border-top: 1px solid #ddd; padding: 1rem;">
+                            <div style="display: flex; gap: 1rem; align-items: center; justify-content: center; flex-wrap: wrap;">
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="storyboard-pencil-btn" class="btn btn-secondary active" style="width: auto; padding: 0.5rem 1rem; color: black; border-color: #ccc; background: white;">✏️</button>
+                                    <button id="storyboard-eraser-btn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; color: black; border-color: #ccc; background: white;">🧽</button>
+                                </div>
+                                <input type="color" id="storyboard-color" value="#000000" style="border: none; background: none; width: 40px; height: 40px; cursor: pointer;">
+                                <input type="range" id="storyboard-size" min="2" max="50" value="5" style="width: 100px;">
+                                <button id="storyboard-clear-btn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem; color: black; border-color: #ccc; background: white;">Clear</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="background: white; border: 1px solid #ddd; box-shadow: none; margin-top: 1rem; padding: 1rem;">
+                        <textarea id="storyboard-script" placeholder="Write your script here..." style="width: 100%; height: 200px; border: none; padding: 0; font-family: inherit; font-size: 1.1rem; resize: vertical; background: white; color: black; outline: none;"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrabble Lobby Screen -->
+        <div id="scrabble-lobby-screen" class="screen">
+            <div class="game-header">
+                <button id="scrabble-back-btn" class="back-btn">← Back to Hub</button>
+                <h1 class="game-title">🔠 Scrabble</h1>
+                <p class="game-subtitle">Multiplayer Azerbaijani Scrabble.</p>
+            </div>
+
+            <!-- Join Game Section -->
+            <div id="scrabble-join-section" class="card">
+                <div class="input-group">
+                    <label for="scrabble-room-name">Enter Room Name</label>
+                    <input type="text" id="scrabble-room-name" placeholder="e.g. soz123" maxlength="15" autocomplete="off">
+                </div>
+                <div class="input-group" style="margin-top: 1rem;">
+                    <label for="scrabble-player-name">Enter Your Name</label>
+                    <input type="text" id="scrabble-player-name" placeholder="Your name..." maxlength="20" autocomplete="off">
+                </div>
+                <button id="scrabble-join-btn" class="btn btn-primary" style="margin-top: 1rem;">Join Room</button>
+            </div>
+
+            <div id="scrabble-lobby-section" class="card" style="display: none;">
+                <h3>Players in Room:</h3>
+                <div id="scrabble-players-list" style="margin: 1rem 0; display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                <button id="scrabble-start-btn" class="btn btn-primary" style="display: none; margin-bottom: 1rem;">Start Game</button>
+                <button id="scrabble-leave-btn" class="btn btn-secondary">Leave Room</button>
+            </div>
+        </div>
+
+        <!-- Scrabble Game Screen -->
+        <div id="scrabble-game-screen" class="screen">
+            <div class="game-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div style="flex: 1;">
+                    <h2 style="color: var(--primary-light); margin: 0; font-size: 1.2rem;">Scrabble</h2>
+                    <div id="scrabble-turn-indicator" style="font-weight: bold; margin-top: 0.25rem;">Waiting...</div>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="scrabble-how-to-play-btn" class="btn btn-primary" style="width: auto; padding: 0.5rem 1rem;">How to Play</button>
+                    <button id="scrabble-quit-btn" class="btn btn-secondary" style="width: auto; padding: 0.5rem 1rem;">Quit</button>
+                </div>
+            </div>
+
+            <div class="scrabble-layout" style="display: grid; grid-template-columns: 1fr 250px; gap: 1rem; align-items: start;">
+                <!-- Main Game Area -->
+                <div class="scrabble-main-area">
+                    <div id="scrabble-board" class="scrabble-board"></div>
+                    
+                    <div class="card" style="margin-top: 1rem;">
+                        <div id="scrabble-rack" class="scrabble-rack"></div>
+                        
+                        <div class="scrabble-controls" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Drag tiles from your rack to the board. Click "Play Word" when ready.</p>
+                            
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button id="scrabble-play-btn" class="btn btn-primary" style="flex: 2;" title="Play the tiles currently placed on the board">Play Word</button>
+                                <button id="scrabble-recall-btn" class="btn btn-secondary" style="flex: 1;" title="Return all placed tiles back to your rack">Recall</button>
+                                <button id="scrabble-pass-btn" class="btn btn-secondary" style="flex: 1;" title="Skip your turn">Pass</button>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button id="scrabble-shuffle-btn" class="btn btn-secondary" style="flex: 1;" title="Shuffle the tiles in your rack (Does not skip your turn, once per turn)">🔀 Shuffle</button>
+                                <button id="scrabble-swap-btn" class="btn btn-secondary" style="flex: 1;" title="Exchange selected tiles with the bag (Skips your turn)">🔄 Swap</button>
+                            </div>
+
+                            <!-- Swap Mode UI (Hidden by default) -->
+                            <div id="scrabble-swap-ui" style="display: none; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; padding: 0.5rem; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                                <p style="font-size: 0.85rem; color: var(--warning); margin: 0;">Select tiles to swap:</p>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button id="scrabble-confirm-swap-btn" class="btn btn-primary" style="flex: 1;">Confirm</button>
+                                    <button id="scrabble-cancel-swap-btn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sidebar Area -->
+                <div class="scrabble-sidebar-area">
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <h3>Scores</h3>
+                        <div id="scrabble-scores-list" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;"></div>
+                    </div>
+                    <div class="card" style="margin-bottom: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; cursor: pointer;" id="scrabble-bag-info-btn" title="Click to view remaining tiles">
+                            <span style="font-weight: bold;">Tiles in Bag:</span>
+                            <span id="scrabble-bag-count" class="badge">--</span>
+                        </div>
+                    </div>
+                    <div class="card" id="scrabble-last-word-card" style="display: none;">
+                        <h3 style="margin-bottom: 0.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Last Played Words</h3>
+                        <div id="scrabble-last-word-content"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scrabble Modals -->
+        <div id="scrabble-fail-modal" class="scrabble-modal-overlay" style="display: none;">
+            <div class="scrabble-modal-card card">
+                <h3 style="color: var(--danger); margin-bottom: 0.5rem;">Word Not Found</h3>
+                <p id="scrabble-fail-text" style="margin-bottom: 1rem;">The word was not found in the dictionary.</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button id="scrabble-fail-cancel-btn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                    <button id="scrabble-fail-request-btn" class="btn btn-primary" style="flex: 1;">Request Approval</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="scrabble-waiting-modal" class="scrabble-modal-overlay" style="display: none;">
+            <div class="scrabble-modal-card card">
+                <h3 style="color: var(--warning); margin-bottom: 0.5rem;">Waiting...</h3>
+                <p>Waiting for opponent to approve your word...</p>
+            </div>
+        </div>
+
+        <div id="scrabble-decision-modal" class="scrabble-modal-overlay" style="display: none;">
+            <div class="scrabble-modal-card card">
+                <h3 style="color: var(--primary-light); margin-bottom: 0.5rem;">Word Approval</h3>
+                <p id="scrabble-decision-text" style="margin-bottom: 1rem;">Opponent wants to play a word. Allow?</p>
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button id="scrabble-decision-no-btn" class="btn btn-danger" style="flex: 1;">Reject</button>
+                    <button id="scrabble-decision-yes-btn" class="btn btn-success" style="flex: 1;">Accept</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="scrabble-joker-modal" class="scrabble-modal-overlay" style="display: none;">
+            <div class="scrabble-modal-card card" style="text-align: center;">
+                <h3 style="color: var(--primary-light); margin-bottom: 0.5rem;">Blank Tile</h3>
+                <p style="margin-bottom: 1rem;">Enter a letter for the blank tile:</p>
+                <input type="text" id="scrabble-joker-input" maxlength="1" style="width: 3rem; text-align: center; font-size: 1.5rem; text-transform: uppercase; color: #111827; background: #f3f4f6; border: 1px solid #ccc; border-radius: 4px;" autocomplete="off" />
+                <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                    <button id="scrabble-joker-cancel-btn" class="btn btn-secondary" style="flex: 1;">Cancel</button>
+                    <button id="scrabble-joker-ok-btn" class="btn btn-primary" style="flex: 1;">Confirm</button>
+                </div>
+            </div>
+            </div>
+        </div>
+
+        <div id="scrabble-bag-modal" class="scrabble-modal-overlay" style="display: none;">
+            <div class="scrabble-modal-card card" style="max-width: 400px; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Remaining Tiles</h3>
+                <div id="scrabble-bag-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 0.5rem; margin-bottom: 1rem;">
+                    <!-- Filled by JS -->
+                </div>
+                <button id="scrabble-bag-close-btn" class="btn btn-secondary" style="width: 100%;">Close</button>
+            </div>
+        </div>
+
+        <div id="scrabble-how-to-play-modal" class="scrabble-modal-overlay" style="display: none; align-items: flex-end;">
+            <div class="card" style="width: 100%; max-width: 600px; max-height: 85vh; overflow-y: auto; border-radius: 16px 16px 0 0; margin: 0 auto; animation: slideUp 0.3s ease-out;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+                    <h3 style="color: var(--primary-light); margin: 0;">How to Play Scrabble</h3>
+                    <button id="scrabble-htp-close-btn" class="btn btn-secondary" style="padding: 0.25rem 0.75rem;">✕</button>
+                </div>
+                <div style="line-height: 1.5; color: var(--text-light); font-size: 0.95rem;">
+                    <p><strong>Objective:</strong> Score the most points by forming valid Azerbaijani words horizontally or vertically on the board.</p>
+                    <p><strong>First Turn:</strong> The first word played must cover the center star tile.</p>
+                    <p><strong>Connecting Words:</strong> All subsequent words must connect to at least one existing tile on the board.</p>
+                    <p><strong>Scoring:</strong> Each letter has a point value. The total score for a turn is the sum of the letters in all new words formed. Premium squares multiply the letter or word score:</p>
+                    <ul style="margin-top: 0.25rem; margin-bottom: 1rem; padding-left: 1.5rem;">
+                        <li><strong style="color: #60a5fa;">2x Letter (L2)</strong> / <strong style="color: #3b82f6;">3x Letter (L3)</strong></li>
+                        <li><strong style="color: #f87171;">2x Word (W2)</strong> / <strong style="color: #ef4444;">3x Word (W3)</strong></li>
+                    </ul>
+                    <p><strong>Bingo:</strong> If you play all 7 tiles from your rack in one turn, you receive a 50-point bonus!</p>
+                    <h4 style="margin-top: 1rem; margin-bottom: 0.5rem; color: var(--text-light);">Special Tiles & Mechanics:</h4>
+                    <ul style="margin-bottom: 1rem; padding-left: 1.5rem;">
+                        <li><strong>Blank Tile (*):</strong> Worth 0 points, but can represent any letter. You will be prompted to choose its letter when placed.</li>
+                        <li><strong>🔄 Swap:</strong> Skip your turn to exchange any number of your tiles with the bag.</li>
+                        <li><strong>🔀 Shuffle:</strong> Reorganize your rack (once per turn) to help spot words. This does NOT skip your turn.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <style>
+            @keyframes slideUp {
+                from { transform: translateY(100%); }
+                to { transform: translateY(0); }
+            }
+        </style>
+        <!-- End Scrabble Modals -->
+
+        <!-- Crossword Game Screen -->
+        <div id="crossword-game-screen" class="screen">
+            <div class="crossword-header">
+                <button id="crossword-back-btn" class="back-btn" style="margin-bottom: 0;">← Back</button>
+                <h1 class="game-title" style="margin-bottom: 0; font-size: 1.6rem; margin-right: auto; margin-left: 1.5rem;">📝 Crossword</h1>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="crossword-reveal-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #ef4444;" title="Reveal the answers">
+                        👁 Reveal
+                    </button>
+                    <button id="crossword-refresh-btn" class="btn btn-secondary" style="padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; display: flex; align-items: center; gap: 0.5rem;" title="Generate a new crossword">
+                        🔄 Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Clue Bar -->
+            <div class="crossword-active-clue">
+                <button id="clue-prev-btn" class="clue-nav-btn">‹</button>
+                <span id="clue-text" class="clue-bar-text">Select a cell...</span>
+                <button id="clue-next-btn" class="clue-nav-btn">›</button>
+            </div>
+
+            <div class="crossword-layout">
+                <!-- Board Panel -->
+                <div class="crossword-board-panel">
+                    <div id="crossword-board" class="crossword-board"></div>
+                </div>
+
+                <!-- Clues Panel -->
+                <div class="crossword-clues-panel">
+                    <div class="clues-section">
+                        <h3 class="clues-heading">Across</h3>
+                        <ul id="crossword-clues-across" class="cw-clues-list"></ul>
+                    </div>
+                    <div class="clues-section">
+                        <h3 class="clues-heading">Down</h3>
+                        <ul id="crossword-clues-down" class="cw-clues-list"></ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading Overlay -->
+            <div id="crossword-loading" class="crossword-loading" style="display: none;">
+                <div class="cw-spinner"></div>
+                <p>Loading questions from Wikipedia...</p>
+            </div>
+        </div>
+
         <!-- Firebase SDK -->
         <script type="module" src="game.js?v=1.4"></script>
+        <script type="module" src="scrabble-game.js?v=1.0"></script>
         <script type="module" src="wordle.js?v=1.0"></script>
         <script type="module" src="scribble.js?v=1.0"></script>
         <script type="module" src="password.js?v=1.0"></script>
+        <script type="module" src="storyboard.js?v=1.0"></script>
+        <script type="module" src="crossword-generator.js?v=1.0"></script>
+        <script type="module" src="crossword.js?v=1.0"></script>
 
         <script>
             const originalTitle = document.title;
