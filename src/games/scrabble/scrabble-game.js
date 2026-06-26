@@ -26,42 +26,100 @@ const firebaseConfig = {
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
+// Synchronize server time offset
+let serverTimeOffset = 0;
+onValue(ref(database, ".info/serverTimeOffset"), (snap) => {
+    serverTimeOffset = snap.val() || 0;
+});
+
 // Constants
-const letterData = {
-    'A': { count: 9, points: 1 },
-    'E': { count: 5, points: 1 },
-    'Ə': { count: 9, points: 1 },
-    'İ': { count: 8, points: 1 },
-    'I': { count: 5, points: 1 },
-    'N': { count: 7, points: 1 },
-    'R': { count: 6, points: 1 },
-    'L': { count: 6, points: 1 },
-    'T': { count: 5, points: 1 },
-    'D': { count: 4, points: 2 },
+const AZ_LETTER_DATA = {
+    'A': { count: 7, points: 1 },
+    'Ə': { count: 6, points: 1 },
+    'İ': { count: 5, points: 1 },
     'M': { count: 5, points: 2 },
-    'S': { count: 4, points: 2 },
-    'O': { count: 4, points: 2 },
-    'Y': { count: 4, points: 2 },
-    'Q': { count: 4, points: 2 },
-    'Ş': { count: 3, points: 2 },
-    'U': { count: 4, points: 2 },
-    'B': { count: 3, points: 3 },
-    'K': { count: 4, points: 3 },
+    'N': { count: 5, points: 1 },
+    'R': { count: 5, points: 1 },
+    'L': { count: 6, points: 1 },
+    'D': { count: 4, points: 2 },
+    'T': { count: 4, points: 1 },
+    'I': { count: 4, points: 1 },
+    'E': { count: 4, points: 1 },
+    'S': { count: 3, points: 2 },
+    'O': { count: 3, points: 2 },
+    'Y': { count: 3, points: 2 },
+    'Q': { count: 3, points: 2 },
+    'U': { count: 3, points: 2 },
+    'K': { count: 3, points: 3 },
+    'Ş': { count: 2, points: 2 },
+    'B': { count: 2, points: 3 },
     'C': { count: 2, points: 3 },
-    'V': { count: 2, points: 3 },
     'Z': { count: 2, points: 3 },
-    'X': { count: 1, points: 4 },
-    'P': { count: 1, points: 4 },
     'Ç': { count: 2, points: 4 },
-    'Ğ': { count: 2, points: 5 },
-    'G': { count: 2, points: 5 },
-    'Ö': { count: 3, points: 5 },
-    'H': { count: 2, points: 5 },
-    'Ü': { count: 3, points: 5 },
+    'Ö': { count: 2, points: 5 },
+    'Ü': { count: 2, points: 5 },
+    'V': { count: 1, points: 3 },
+    'Ğ': { count: 1, points: 5 },
+    'G': { count: 1, points: 5 },
+    'H': { count: 1, points: 5 },
+    'P': { count: 1, points: 4 },
+    'X': { count: 1, points: 4 },
     'F': { count: 1, points: 8 },
     'J': { count: 1, points: 10 },
     '*': { count: 5, points: 0 }
 };
+
+const TR_LETTER_DATA = {
+    'A': { count: 12, points: 1 },
+    'E': { count: 8, points: 1 },
+    'İ': { count: 7, points: 1 },
+    'K': { count: 7, points: 1 },
+    'L': { count: 7, points: 1 },
+    'R': { count: 6, points: 1 },
+    'N': { count: 5, points: 1 },
+    'T': { count: 5, points: 1 },
+    'I': { count: 4, points: 2 },
+    'M': { count: 4, points: 2 },
+    'S': { count: 3, points: 2 },
+    'O': { count: 3, points: 2 },
+    'U': { count: 3, points: 2 },
+    'B': { count: 2, points: 3 },
+    'D': { count: 2, points: 3 },
+    'Ü': { count: 2, points: 3 },
+    'Y': { count: 2, points: 3 },
+    'C': { count: 2, points: 4 },
+    'Ç': { count: 2, points: 4 },
+    'Ş': { count: 2, points: 4 },
+    'Z': { count: 2, points: 4 },
+    'G': { count: 1, points: 5 },
+    'H': { count: 1, points: 5 },
+    'P': { count: 1, points: 5 },
+    'F': { count: 1, points: 7 },
+    'Ö': { count: 1, points: 7 },
+    'V': { count: 1, points: 7 },
+    'Ğ': { count: 1, points: 8 },
+    'J': { count: 1, points: 10 },
+    '*': { count: 2, points: 0 } // blank
+};
+
+function getLetterData(lang) {
+    if (lang === 'tr') {
+        return TR_LETTER_DATA;
+    }
+    return AZ_LETTER_DATA;
+}
+
+function getVowels(lang) {
+    if (lang === 'tr') {
+        return ['A', 'E', 'I', 'İ', 'O', 'Ö', 'U', 'Ü'];
+    }
+    return ['A', 'E', 'Ə', 'İ', 'I', 'O', 'Ö', 'U', 'Ü'];
+}
+
+function currentLetterData() {
+    const lang = gameData?.language || 'az';
+    return getLetterData(lang);
+}
 
 const TW = ['0,0','0,7','0,14','7,0','7,14','14,0','14,7','14,14'];
 const DW = ['1,1','2,2','3,3','4,4','10,10','11,11','12,12','13,13','1,13','2,12','3,11','4,10','13,1','12,2','11,3','10,4'];
@@ -78,6 +136,10 @@ let gameData = null;
 let unsubscribeRoom = null;
 let unsubscribePlayers = null;
 
+// Turn Timer State
+let turnTimerInterval = null;
+let isPassingTurnLocally = false;
+
 // Local State for Drag & Drop
 let pendingPlacements = []; // Array of {r, c, letter, rackIdx}
 let draggedTileInfo = null; // {source: 'rack'|'board', rackIdx, r, c, letter}
@@ -91,6 +153,7 @@ const joinSection = document.getElementById('scrabble-join-section');
 const lobbySection = document.getElementById('scrabble-lobby-section');
 const backBtn = document.getElementById('scrabble-back-btn');
 const quitBtn = document.getElementById('scrabble-quit-btn');
+const singleBtn = document.getElementById('scrabble-single-btn');
 const joinBtn = document.getElementById('scrabble-join-btn');
 const startBtn = document.getElementById('scrabble-start-btn');
 const leaveBtn = document.getElementById('scrabble-leave-btn');
@@ -105,6 +168,7 @@ const recallBtn = document.getElementById('scrabble-recall-btn');
 const scoresList = document.getElementById('scrabble-scores-list');
 const bagCount = document.getElementById('scrabble-bag-count');
 const turnIndicator = document.getElementById('scrabble-turn-indicator');
+const timerToggle = document.getElementById('scrabble-timer-toggle');
 
 // Modal DOM
 const failModal = document.getElementById('scrabble-fail-modal');
@@ -148,8 +212,22 @@ if (selectScrabble) {
 if (backBtn) backBtn.addEventListener('click', leaveRoom);
 if (leaveBtn) leaveBtn.addEventListener('click', leaveRoom);
 if (quitBtn) quitBtn.addEventListener('click', leaveRoom);
+if (singleBtn) singleBtn.addEventListener('click', startSinglePlayer);
 if (joinBtn) joinBtn.addEventListener('click', joinRoom);
 if (startBtn) startBtn.addEventListener('click', startGame);
+
+if (timerToggle) {
+    timerToggle.addEventListener('change', async () => {
+        if (!roomName) return;
+        try {
+            await update(ref(database, `game/scrabble/rooms/${roomName}`), {
+                timerEnabled: timerToggle.checked
+            });
+        } catch (e) {
+            console.error(e);
+        }
+    });
+}
 
 if (playBtn) playBtn.addEventListener('click', handlePlayWord);
 if (passBtn) passBtn.addEventListener('click', handlePassTurn);
@@ -218,7 +296,8 @@ if (confirmSwapBtn) confirmSwapBtn.addEventListener('click', async () => {
     
     // Draw new tiles
     while (rack.length < 7 && bag.length > 0) {
-        const tile = drawBalancedTile(rack, bag);
+        const lang = gameData?.language || 'az';
+        const tile = drawBalancedTile(rack, bag, gameData.board, lang);
         if (tile) rack.push(tile);
     }
     
@@ -230,7 +309,8 @@ if (confirmSwapBtn) confirmSwapBtn.addEventListener('click', async () => {
     await update(ref(database, `game/scrabble/rooms/${roomName}`), {
         bag: bag,
         [`players/${playerId}/rack`]: rack,
-        currentTurn: nextTurn
+        currentTurn: nextTurn,
+        turnStartTime: { ".sv": "timestamp" }
     });
     
     isSwapMode = false;
@@ -252,12 +332,14 @@ if (bagInfoBtn) bagInfoBtn.addEventListener('click', () => {
         counts[letter] = (counts[letter] || 0) + 1;
     }
     
-    bagGrid.innerHTML = Object.keys(letterData).map(letter => {
-        // letterData keys are uppercase, gameData.bag also uses uppercase!
+    const lang = gameData?.language || 'az';
+    const currentLetterDataMap = getLetterData(lang);
+    bagGrid.innerHTML = Object.keys(currentLetterDataMap).map(letter => {
+        // letter keys are uppercase, gameData.bag also uses uppercase!
         const searchKey = letter;
         const count = counts[searchKey] || 0;
         const displayLetter = letter === '*' ? '' : letter;
-        const points = letter === '*' ? 0 : letterData[letter].points;
+        const points = letter === '*' ? 0 : currentLetterDataMap[letter].points;
         
         return `
             <div style="display: flex; flex-direction: column; align-items: center; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 8px; opacity: ${count === 0 ? '0.5' : '1'};">
@@ -287,7 +369,7 @@ if (htpCloseBtn) htpCloseBtn.addEventListener('click', () => htpModal.style.disp
 if (failCancelBtn) failCancelBtn.addEventListener('click', () => {
     failModal.style.display = 'none';
     playBtn.disabled = false;
-    playBtn.innerText = 'Play Word';
+    playBtn.innerText = 'Play';
 });
 
 if (failRequestBtn) failRequestBtn.addEventListener('click', async () => {
@@ -306,7 +388,7 @@ if (failRequestBtn) failRequestBtn.addEventListener('click', async () => {
         console.error(e);
         alert('Failed to send request.');
         playBtn.disabled = false;
-        playBtn.innerText = 'Play Word';
+        playBtn.innerText = 'Play';
     }
 });
 
@@ -326,15 +408,16 @@ if (jokerCancelBtn) jokerCancelBtn.addEventListener('click', () => {
 });
 
 if (jokerOkBtn) jokerOkBtn.addEventListener('click', () => {
-    let val = jokerInput.value.toLocaleUpperCase('az');
-    if (!val || !letterData[val]) return alert('Please enter a valid letter.');
+    let val = toWikiUpper(jokerInput.value);
+    const lang = gameData?.language || 'az';
+    if (!val || !getLetterData(lang)[val]) return alert('Please enter a valid letter.');
     
     jokerModal.style.display = 'none';
     if (pendingJokerDrop) {
         pendingPlacements.push({
             r: pendingJokerDrop.r,
             c: pendingJokerDrop.c,
-            letter: val.toLowerCase(), // store as lowercase to indicate joker
+            letter: toWikiLower(val), // store as lowercase to indicate joker
             rackIdx: pendingJokerDrop.rackIdx
         });
         pendingJokerDrop = null;
@@ -354,6 +437,144 @@ rackDiv.addEventListener('drop', (e) => {
     pendingPlacements = pendingPlacements.filter(p => !(p.r === draggedTileInfo.r && p.c === draggedTileInfo.c));
     renderGame();
 });
+
+// --- Turn Timer Logic ---
+function startTurnTimer() {
+    if (turnTimerInterval) clearInterval(turnTimerInterval);
+    if (!gameData || gameData.timerEnabled === false) {
+        const timerCard = document.getElementById('scrabble-timer-card');
+        if (timerCard) timerCard.style.display = 'none';
+        return;
+    }
+    updateTimerDisplay(); // Initial draw
+    turnTimerInterval = setInterval(() => {
+        updateTimerDisplay();
+    }, 500);
+}
+
+function stopTurnTimer() {
+    if (turnTimerInterval) {
+        clearInterval(turnTimerInterval);
+        turnTimerInterval = null;
+    }
+}
+
+async function forcePassTurn(expiredPlayerId) {
+    if (!gameData || gameData.status !== 'started' || gameData.currentTurn !== expiredPlayerId) return;
+    
+    const turnOrder = gameData.turnOrder;
+    if (!turnOrder || turnOrder.length === 0) return;
+    
+    const currIdx = turnOrder.indexOf(expiredPlayerId);
+    if (currIdx === -1) return;
+    const nextTurn = turnOrder[(currIdx + 1) % turnOrder.length];
+    
+    if (expiredPlayerId === playerId) {
+        pendingPlacements = [];
+    }
+    
+    await update(ref(database, `game/scrabble/rooms/${roomName}`), {
+        currentTurn: nextTurn,
+        approvalRequest: null,
+        turnStartTime: { ".sv": "timestamp" }
+    });
+}
+
+async function handleTurnTimeout() {
+    if (gameData?.timerEnabled === false) return;
+    if (isPassingTurnLocally) return;
+    
+    const isMyTurn = gameData.currentTurn === playerId;
+    const now = Date.now() + serverTimeOffset;
+    const elapsed = now - gameData.turnStartTime;
+    
+    if (isMyTurn) {
+        isPassingTurnLocally = true;
+        try {
+            alert("Your 2 minutes are up! Turn passes to the next player.");
+            await forcePassTurn(playerId);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            isPassingTurnLocally = false;
+        }
+    } else {
+        if (elapsed >= 123000) {
+            isPassingTurnLocally = true;
+            try {
+                await forcePassTurn(gameData.currentTurn);
+            } catch (e) {
+                console.error(e);
+            } finally {
+                isPassingTurnLocally = false;
+            }
+        }
+    }
+}
+
+function updateTimerDisplay() {
+    const timerCard = document.getElementById('scrabble-timer-card');
+    const timerVal = document.getElementById('scrabble-timer-val');
+    
+    if (!timerCard || !timerVal) return;
+    
+    if (!gameData || gameData.status !== 'started') {
+        timerCard.style.display = 'none';
+        return;
+    }
+    
+    if (gameData.timerEnabled === false) {
+        timerCard.style.display = 'none';
+        return;
+    }
+    
+    if (!gameData.turnStartTime) {
+        // Fallback: If turnStartTime is missing, initialize it
+        if (gameData.currentTurn === playerId) {
+            update(ref(database, `game/scrabble/rooms/${roomName}`), {
+                turnStartTime: { ".sv": "timestamp" }
+            });
+        }
+        timerCard.style.display = 'none';
+        return;
+    }
+    
+    timerCard.style.display = 'flex';
+    
+    // Freeze timer display if a word is pending approval
+    if (gameData.approvalRequest && gameData.approvalRequest.status === 'pending') {
+        timerVal.innerText = "Awaiting Approval...";
+        timerVal.className = "";
+        timerVal.style.color = "var(--warning)";
+        timerCard.classList.remove('danger');
+        return;
+    }
+    
+    const totalDuration = 120000; // 2 minutes
+    const now = Date.now() + serverTimeOffset;
+    const elapsed = now - gameData.turnStartTime;
+    const timeLeft = Math.max(0, totalDuration - elapsed);
+    
+    const minutes = Math.floor(timeLeft / 60000);
+    const seconds = Math.floor((timeLeft % 60000) / 1000);
+    timerVal.innerText = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+    
+    if (timeLeft <= 15000) {
+        timerVal.className = "danger";
+        timerCard.classList.add('danger');
+    } else if (timeLeft <= 30000) {
+        timerVal.className = "warning";
+        timerCard.classList.remove('danger');
+    } else {
+        timerVal.className = "";
+        timerVal.style.color = "var(--success)";
+        timerCard.classList.remove('danger');
+    }
+    
+    if (timeLeft === 0) {
+        handleTurnTimeout();
+    }
+}
 
 // Lobby Logic
 async function joinRoom() {
@@ -382,7 +603,12 @@ async function joinRoom() {
         });
 
         if (!data.status) {
-            await update(roomRef, { status: 'lobby' });
+            const selectedLang = document.getElementById('scrabble-lang-select')?.value || 'az';
+            await update(roomRef, { 
+                status: 'lobby',
+                language: selectedLang,
+                timerEnabled: true
+            });
         }
 
         onDisconnect(newPlayerRef).remove();
@@ -414,6 +640,30 @@ function setupRealtimeListeners() {
 
     unsubscribeRoom = onValue(roomRef, (snap) => {
         gameData = snap.val() || {};
+        
+        // Update UI based on language
+        const lang = gameData.language || 'az';
+        const lobbySubtitle = document.getElementById('scrabble-lobby-subtitle');
+        const lobbyLangBadge = document.getElementById('scrabble-lobby-lang');
+        const gameLangBadge = document.getElementById('scrabble-game-lang');
+        const htpObjective = document.getElementById('scrabble-htp-objective');
+        
+        const langName = lang === 'tr' ? 'Turkish 🇹🇷' : 'Azerbaijani 🇦🇿';
+        
+        if (lobbySubtitle) {
+            lobbySubtitle.innerText = `Multiplayer ${langName} Scrabble.`;
+        }
+        if (lobbyLangBadge) {
+            lobbyLangBadge.innerText = `Language: ${langName}`;
+        }
+        if (gameLangBadge) {
+            gameLangBadge.innerText = langName;
+        }
+        if (htpObjective) {
+            const wordType = lang === 'tr' ? 'Turkish' : 'Azerbaijani';
+            htpObjective.innerHTML = `<strong>Objective:</strong> Score the most points by forming valid ${wordType} words horizontally or vertically on the board.`;
+        }
+
         if (gameData.status === 'started') {
             lobbyScreen.classList.remove('active');
             gameScreen.classList.add('active');
@@ -424,6 +674,17 @@ function setupRealtimeListeners() {
                 isSwapMode = false;
                 tilesToSwap = [];
                 if (swapUi) swapUi.style.display = 'none';
+            }
+
+            // Start turn timer if enabled, stop if disabled
+            if (gameData.timerEnabled !== false) {
+                if (!turnTimerInterval) {
+                    startTurnTimer();
+                }
+            } else {
+                stopTurnTimer();
+                const timerCard = document.getElementById('scrabble-timer-card');
+                if (timerCard) timerCard.style.display = 'none';
             }
 
             // If turn changes or board updates from another player, clear pending to prevent conflicts
@@ -440,6 +701,11 @@ function setupRealtimeListeners() {
         } else {
             gameScreen.classList.remove('active');
             lobbyScreen.classList.add('active');
+            stopTurnTimer();
+            // Sync checkbox with database state
+            if (timerToggle) {
+                timerToggle.checked = gameData.timerEnabled !== false;
+            }
         }
     });
 }
@@ -452,7 +718,7 @@ function updateLobbyUI() {
         </div>
     `).join('');
 
-    if (pArray.length >= 2) {
+    if (pArray.length >= 1) {
         startBtn.style.display = 'block';
     } else {
         startBtn.style.display = 'none';
@@ -473,6 +739,7 @@ async function leaveRoom() {
 function resetToSelection() {
     if (unsubscribePlayers) unsubscribePlayers();
     if (unsubscribeRoom) unsubscribeRoom();
+    stopTurnTimer();
     playerId = '';
     roomName = '';
     players = {};
@@ -487,9 +754,10 @@ function resetToSelection() {
 }
 
 // Game Logic
-function createBag() {
+function createBag(lang = 'az') {
     const bag = [];
-    for (const [letter, data] of Object.entries(letterData)) {
+    const currentLetterDataMap = getLetterData(lang);
+    for (const [letter, data] of Object.entries(currentLetterDataMap)) {
         for (let i = 0; i < data.count; i++) {
             bag.push(letter);
         }
@@ -501,49 +769,119 @@ function createBag() {
     return bag;
 }
 
-function drawBalancedTile(rack, bag) {
+
+function drawBalancedTile(rack, bag, board, lang = 'az') {
     if (bag.length === 0) return null;
-    const vowels = ['A', 'E', 'Ə', 'İ', 'I', 'O', 'Ö', 'U', 'Ü'];
+
+    // Vowel/Consonant Balancer
+    const vowels = getVowels(lang);
+    const hfConsonants = lang === 'tr' ? ['M', 'N', 'L', 'R', 'D', 'Y', 'T', 'S'] : ['M', 'N', 'L', 'R', 'D', 'Y', 'T'];
     let vCount = 0, cCount = 0;
+    
     for (let tile of rack) {
         if (tile === '*') continue;
         if (vowels.includes(tile)) vCount++;
         else cCount++;
     }
+    
+    // Rule: Try to keep 3 Vowels / 4 Consonants
     if (vCount >= 3) {
+        // High-Frequency Bias (70% chance to pull a highly useful consonant like M, N, L)
+        if (Math.random() < 0.7) {
+            const hfIdx = bag.findLastIndex(t => hfConsonants.includes(t));
+            if (hfIdx !== -1) return bag.splice(hfIdx, 1)[0];
+        }
+        
+        // Fallback: any consonant
         const idx = bag.findLastIndex(t => t !== '*' && !vowels.includes(t));
         if (idx !== -1) return bag.splice(idx, 1)[0];
     }
+    
     if (cCount >= 4) {
         const idx = bag.findLastIndex(t => vowels.includes(t));
         if (idx !== -1) return bag.splice(idx, 1)[0];
     }
+    
     return bag.pop();
+}
+
+async function startSinglePlayer() {
+    const selectedLang = document.getElementById('scrabble-lang-select')?.value || 'az';
+    roomName = `single_${Math.random().toString(36).substr(2, 6)}`;
+    const name = 'Player';
+    
+    joinSection.style.display = 'none';
+    lobbySection.style.display = 'none';
+    
+    try {
+        const dbRef = ref(database, `game/scrabble/rooms/${roomName}/players`);
+        const newPlayerRef = push(dbRef);
+        playerId = newPlayerRef.key;
+        
+        await set(newPlayerRef, {
+            name: name,
+            score: 0,
+            rack: []
+        });
+
+        onDisconnect(newPlayerRef).remove();
+        
+        setupRealtimeListeners();
+        
+        let bag = createBag(selectedLang);
+        const board = Array(15).fill().map(() => Array(15).fill(null));
+        let rack = [];
+        for (let i = 0; i < 7; i++) {
+            const tile = drawBalancedTile(rack, bag, board, selectedLang);
+            if (tile) rack.push(tile);
+        }
+        
+        const updates = {
+            status: 'started',
+            language: selectedLang,
+            board: board,
+            bag: bag,
+            currentTurn: playerId,
+            turnOrder: [playerId],
+            [`players/${playerId}/rack`]: rack,
+            [`players/${playerId}/score`]: 0,
+            turnStartTime: { ".sv": "timestamp" },
+            timerEnabled: false
+        };
+        
+        await update(ref(database, `game/scrabble/rooms/${roomName}`), updates);
+    } catch (e) {
+        console.error(e);
+        alert('Failed to start single player game.');
+        resetToSelection();
+    }
 }
 
 async function startGame() {
     try {
-        let bag = createBag();
+        const lang = gameData?.language || 'az';
+        let bag = createBag(lang);
         const pKeys = Object.keys(players);
         const updates = {};
         
+        const board = Array(15).fill().map(() => Array(15).fill(null));
+
         pKeys.forEach(pId => {
             let rack = [];
             for (let i = 0; i < 7; i++) {
-                const tile = drawBalancedTile(rack, bag);
+                const tile = drawBalancedTile(rack, bag, board, lang);
                 if (tile) rack.push(tile);
             }
             updates[`players/${pId}/rack`] = rack;
             updates[`players/${pId}/score`] = 0;
         });
 
-        const board = Array(15).fill().map(() => Array(15).fill(null));
-
         updates.status = 'started';
         updates.board = board;
         updates.bag = bag;
         updates.currentTurn = pKeys[0];
         updates.turnOrder = pKeys;
+        updates.turnStartTime = { ".sv": "timestamp" };
 
         await update(ref(database, `game/scrabble/rooms/${roomName}`), updates);
     } catch(e) {
@@ -555,23 +893,23 @@ function renderGame() {
     if (!gameData) return;
     
     // Scores
-    scoresList.innerHTML = Object.entries(gameData.players || {}).map(([id, p]) => `
-        <div style="display: flex; justify-content: space-between; align-items: center; ${id === gameData.currentTurn ? 'font-weight: bold; color: var(--primary-light);' : ''}">
-            <span>${id === gameData.currentTurn ? '▶ ' : ''}${escapeHtml(p.name)} ${id === playerId ? '(You)' : ''}</span>
-            <span class="badge">${p.score} pts</span>
+    scoresList.innerHTML = Object.entries(gameData.players || {}).map(([id, p]) => {
+        const isActive = id === gameData.currentTurn;
+        return `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.5rem; border-radius: 8px; ${isActive ? 'background: rgba(100, 200, 255, 0.1); border: 1px solid var(--primary);' : ''}">
+            <span style="${isActive ? 'font-weight: bold; color: var(--primary-light);' : ''}">${isActive ? '▶ ' : ''}${escapeHtml(p.name)} ${id === playerId ? '(You)' : ''}</span>
+            <span class="badge" style="${isActive ? 'background: var(--primary); color: #fff;' : ''}">${p.score} pts</span>
         </div>
-    `).join('');
+        `;
+    }).join('');
 
     bagCount.innerText = gameData.bag ? gameData.bag.length : 0;
 
     const isMyTurn = gameData.currentTurn === playerId;
     if (isMyTurn) {
-        turnIndicator.innerHTML = '<span style="color: var(--success);">Your Turn!</span>';
         playBtn.disabled = false;
         passBtn.disabled = false;
     } else {
-        const currPName = gameData.players[gameData.currentTurn]?.name || 'Opponent';
-        turnIndicator.innerHTML = `<span style="color: var(--warning);">${escapeHtml(currPName)}'s Turn</span>`;
         playBtn.disabled = true;
         passBtn.disabled = true;
     }
@@ -620,9 +958,10 @@ function createTileElement(letter, isPending) {
     }
 
     // Handle Joker styling
-    const isJoker = letter === letter.toLowerCase() && letter !== '*';
-    const displayLetter = letter.toLocaleUpperCase('az');
-    const points = isJoker ? 0 : (letterData[displayLetter]?.points || 0);
+    const isJoker = letter === toWikiLower(letter) && letter !== '*';
+    const displayLetter = toWikiUpper(letter);
+    const lang = gameData?.language || 'az';
+    const points = isJoker ? 0 : (getLetterData(lang)[displayLetter]?.points || 0);
 
     tile.innerHTML = `
         ${displayLetter}
@@ -786,6 +1125,7 @@ function renderBoard() {
 // --- Validation ---
 
 function toWikiLower(word) {
+    if (!word) return word;
     const map = {
         'I': 'ı', 'İ': 'i', 'Ə': 'ə', 'Ö': 'ö', 
         'Ü': 'ü', 'Ğ': 'ğ', 'Ç': 'ç', 'Ş': 'ş'
@@ -793,107 +1133,117 @@ function toWikiLower(word) {
     return word.replace(/[IİƏÖÜĞÇŞ]/g, m => map[m]).toLowerCase();
 }
 
-async function isValidWord(word) {
+function toWikiUpper(word) {
+    if (!word) return word;
+    const map = {
+        'ı': 'I', 'i': 'İ', 'ə': 'Ə', 'ö': 'Ö', 
+        'ü': 'Ü', 'ğ': 'Ğ', 'ç': 'Ç', 'ş': 'Ş'
+    };
+    return word.replace(/[ıiəöüğçş]/g, m => map[m]).toUpperCase();
+}
+
+async function isValidWord(word, lang = 'az') {
     if (!word || word.length < 2) return { valid: false, definition: null };
-    let url;
     
     // Custom mapping to prevent JS converting 'İ' to 'i\u0307'
     let lowerWord = toWikiLower(word);
-    let capitalizedWord = word.charAt(0) + toWikiLower(word.slice(1));
-    let definition = null;
 
     try {
-        // Helper to extract definition text from Wiki API response (for Wikipedia)
-        const extractDef = (pages) => {
-            for (let pageId in pages) {
-                const p = pages[pageId];
-                if (!p.hasOwnProperty('missing')) {
-                    if (p.extract) {
-                        let text = p.extract.replace(/\n/g, ' ').trim();
-                        if (text.length > 150) text = text.substring(0, 147) + '...';
-                        return text;
+        if (lang === 'tr') {
+            // Check Turkish word using sozluk.gov.tr GTS API
+            const targetUrl = `https://sozluk.gov.tr/gts?ara=${encodeURIComponent(lowerWord)}`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            if (response.status === 404) {
+                return { valid: false, definition: null };
+            }
+            
+            const data = await response.json();
+            if (data.error || !Array.isArray(data) || data.length === 0) {
+                return { valid: false, definition: null };
+            }
+            
+            let definitionText = '';
+            const anlamList = data[0].anlamlarListe;
+            if (anlamList && anlamList.length > 0) {
+                definitionText = anlamList.map((item, idx) => {
+                    let typeStr = '';
+                    if (item.ozelliklerListe && item.ozelliklerListe.length > 0) {
+                        typeStr = `(${item.ozelliklerListe.map(o => o.tam_adi).join(', ')}) `;
                     }
-                    return true;
+                    return `${idx + 1}. ${typeStr}${item.anlam}`;
+                }).join(' ');
+            }
+            
+            definitionText = definitionText.trim();
+            if (!definitionText) {
+                definitionText = 'Kelime sözlükte bulundu, fakat açıklaması yok.';
+            }
+            
+            return { valid: true, definition: definitionText };
+        } else {
+            // Azerbaijani dictionary checking (existing code)
+            const targetUrl = `https://azleks.az/dictionary?search=${encodeURIComponent(lowerWord)}&dictionary_id=`;
+            const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(targetUrl)}`;
+            
+            const response = await fetch(proxyUrl);
+            
+            if (response.status === 404) {
+                return { valid: false, definition: null };
+            }
+            
+            const html = await response.text();
+            
+            if (!html || html.includes('not found') || html.trim() === '') {
+                return { valid: false, definition: null };
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, 'text/html');
+            
+            const bashSozList = doc.querySelectorAll('.bash-soz');
+            let foundBashSoz = null;
+            
+            for (let bs of bashSozList) {
+                // Clone to strip out meta tags without mutating the real DOM
+                const clone = bs.cloneNode(true);
+                
+                // Remove superscripts (e.g. bir1 -> bir) and pronunciation/part-of-speech tags
+                const junk = clone.querySelectorAll('sup, .teleffuz, .nitq-hissesi, .etimologiya');
+                junk.forEach(el => el.remove());
+                
+                // Clean invisible characters, nbsp, and formatting spaces
+                let extractedWord = toWikiLower(clone.textContent.replace(/\u00A0/g, '').replace(/\s+/g, ''));
+                
+                // Match exactly with our search word
+                if (extractedWord === lowerWord) {
+                    foundBashSoz = bs;
+                    break;
                 }
             }
-            return false;
-        };
-
-        // Helper to parse Wiktionary raw wikitext for definitions
-        const parseWikitextDef = (pages) => {
-            for (let pageId in pages) {
-                const p = pages[pageId];
-                if (!p.hasOwnProperty('missing')) {
-                    try {
-                        const wikitext = p.revisions[0].slots.main['*'];
-                        const lines = wikitext.split('\n');
-                        let inAzSection = false;
-                        for (let line of lines) {
-                            if (line.includes('{{Dil|Azərbaycan dili}}') || line.includes('==Azərbaycan dili==')) {
-                                inAzSection = true;
-                                continue;
-                            }
-                            if (inAzSection && line.match(/^==[^=]/)) {
-                                // Hit another language section
-                                inAzSection = false;
-                            }
-
-                            if (inAzSection && line.trim().startsWith('#') && !line.trim().startsWith('#:')) {
-                                let def = line.trim().substring(1).trim();
-                                def = def.replace(/\[\[([^\]\|]+\|)?([^\]]+)\]\]/g, '$2'); // remove links
-                                def = def.replace(/\{\{[^\}]+\}\}/g, '').trim(); // remove templates
-                                if (def.length > 150) def = def.substring(0, 147) + '...';
-                                return def || true;
-                            }
-                        }
-                        if (wikitext.includes('{{Dil|Azərbaycan dili}}') || wikitext.includes('==Azərbaycan dili==')) {
-                            return true; // Exists in AZ section but couldn't parse definition
-                        }
-                    } catch(e) {}
-                    return false; // Not in AZ dictionary or parse error, let it fall through to Wikipedia check
-                }
+            
+            if (!foundBashSoz) {
+                return { valid: false, definition: null };
             }
-            return false;
-        };
-
-        // 1. Check az.wiktionary.org (with revisions for raw wikitext parsing)
-        url = `https://az.wiktionary.org/w/api.php?action=query&titles=${encodeURIComponent(lowerWord)}|${encodeURIComponent(capitalizedWord)}&prop=revisions&rvprop=content&rvslots=main&redirects=1&format=json&origin=*`;
-        let response = await fetch(url);
-        let data = await response.json();
-        if (data.query && data.query.pages) {
-            let res = parseWikitextDef(data.query.pages);
-            if (res !== false) return { valid: true, definition: typeof res === 'string' ? res : null };
+            
+            let definitionText = '';
+            let sibling = foundBashSoz.nextElementSibling;
+            while (sibling && sibling.tagName === 'P') {
+                definitionText += sibling.textContent + ' ';
+                sibling = sibling.nextElementSibling;
+            }
+            
+            definitionText = definitionText.trim();
+            if (!definitionText) {
+                definitionText = 'Söz lüğətdə tapıldı, lakin ətraflı izahı yoxdur.';
+            }
+            
+            return { valid: true, definition: definitionText };
         }
-
-        // 2. Check az.wikipedia.org (with extracts)
-        url = `https://az.wikipedia.org/w/api.php?action=query&titles=${encodeURIComponent(lowerWord)}|${encodeURIComponent(capitalizedWord)}&prop=extracts&exintro=true&explaintext=true&redirects=1&format=json&origin=*`;
-        response = await fetch(url);
-        data = await response.json();
-        if (data.query && data.query.pages) {
-            let res = extractDef(data.query.pages);
-            if (res !== false) return { valid: true, definition: typeof res === 'string' ? res : null };
-        }
-
-        // 3. Check en.wiktionary.org for "Azerbaijani" section (fallback)
-        url = `https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(lowerWord)}&prop=sections&redirects=1&format=json&origin=*`;
-        response = await fetch(url);
-        data = await response.json();
-        if (data.parse && data.parse.sections && data.parse.sections.some(sec => sec.line.includes('Azerbaijani'))) {
-            return { valid: true, definition: "Found in English Wiktionary (Azerbaijani section)." };
-        }
-
-        url = `https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(capitalizedWord)}&prop=sections&redirects=1&format=json&origin=*`;
-        response = await fetch(url);
-        data = await response.json();
-        if (data.parse && data.parse.sections && data.parse.sections.some(sec => sec.line.includes('Azerbaijani'))) {
-            return { valid: true, definition: "Found in English Wiktionary (Azerbaijani section)." };
-        }
-
-        return { valid: false, definition: null };
     } catch (e) {
-        console.error("API check failed", e);
-        // Fallback to true so the game doesn't break if API is blocked by CORS/network
-        return { valid: true, definition: "Network error, but word was accepted." }; 
+        console.error("Dictionary check failed:", e);
+        return { valid: false, definition: null }; 
     }
 }
 
@@ -909,7 +1259,8 @@ async function handlePassTurn() {
     const nextTurn = turnOrder[(currIdx + 1) % turnOrder.length];
     
     await update(ref(database, `game/scrabble/rooms/${roomName}`), {
-        currentTurn: nextTurn
+        currentTurn: nextTurn,
+        turnStartTime: { ".sv": "timestamp" }
     });
 }
 async function handlePlayWord() {
@@ -968,14 +1319,14 @@ async function handlePlayWord() {
         let wordStr = '';
         let wordScore = 0;
         let wordMultiplier = 1;
+        const currentLetterDataMap = currentLetterData();
 
         if (axis === 'horizontal') {
             for (let c = startC; c <= endC; c++) {
                 const cellLetter = tempBoard[startR][c];
-                wordStr += cellLetter.toLocaleUpperCase('az');
-                
-                const isJoker = cellLetter === cellLetter.toLowerCase() && cellLetter !== '*';
-                let letterScore = isJoker ? 0 : (letterData[cellLetter.toLocaleUpperCase('az')]?.points || 0);
+                wordStr += toWikiUpper(cellLetter);
+                const isJoker = cellLetter === toWikiLower(cellLetter) && cellLetter !== '*';
+                let letterScore = isJoker ? 0 : (currentLetterDataMap[toWikiUpper(cellLetter)]?.points || 0);
                 
                 // Only apply multipliers to newly placed tiles
                 if (pendingPlacements.some(p => p.r === startR && p.c === c)) {
@@ -990,10 +1341,9 @@ async function handlePlayWord() {
         } else {
             for (let r = startR; r <= endR; r++) {
                 const cellLetter = tempBoard[r][startC];
-                wordStr += cellLetter.toLocaleUpperCase('az');
-                
-                const isJoker = cellLetter === cellLetter.toLowerCase() && cellLetter !== '*';
-                let letterScore = isJoker ? 0 : (letterData[cellLetter.toLocaleUpperCase('az')]?.points || 0);
+                wordStr += toWikiUpper(cellLetter);
+                const isJoker = cellLetter === toWikiLower(cellLetter) && cellLetter !== '*';
+                let letterScore = isJoker ? 0 : (currentLetterDataMap[toWikiUpper(cellLetter)]?.points || 0);
 
                 if (pendingPlacements.some(p => p.r === r && p.c === startC)) {
                     const pos = `${r},${startC}`;
@@ -1102,10 +1452,15 @@ async function handlePlayWord() {
     playBtn.innerText = 'Checking...';
 
     let allPlayedWords = [];
+    const lang = gameData?.language || 'az';
     for (let fw of formedWords) {
-        const check = await isValidWord(fw.word);
+        const check = await isValidWord(fw.word, lang);
         if (!check.valid) {
-            failText.innerText = `The word "${fw.word}" was not found in the dictionary.`;
+            if (lang === 'tr') {
+                failText.innerText = `The word "${fw.word}" was not found in the Turkish dictionary.`;
+            } else {
+                failText.innerText = `The word "${fw.word}" was not found in the Azerbaijani dictionary.`;
+            }
             // Set pendingCommitData so failRequestBtn has access to the failed play data
             pendingCommitData = {
                 wordScore: totalScore,
@@ -1146,7 +1501,7 @@ async function commitWord() {
     
     // 8. Draw new tiles
     while (originalRack.length < 7 && bag.length > 0) {
-        const tile = drawBalancedTile(originalRack, bag);
+        const tile = drawBalancedTile(originalRack, bag, tempBoard);
         if (tile) originalRack.push(tile);
     }
 
@@ -1163,18 +1518,19 @@ async function commitWord() {
         [`players/${playerId}/rack`]: originalRack,
         [`players/${playerId}/score`]: currentScore + wordScore,
         lastPlay: { allWords: pendingCommitData.allWords },
-        lastPlayTiles: pendingPlacements.map(p => `${p.r},${p.c}`)
+        lastPlayTiles: pendingPlacements.map(p => `${p.r},${p.c}`),
+        turnStartTime: { ".sv": "timestamp" }
     };
 
     try {
         await update(ref(database, `game/scrabble/rooms/${roomName}`), updates);
         pendingPlacements = [];
-        playBtn.innerText = 'Play Word';
+        playBtn.innerText = 'Play';
         pendingCommitData = null;
     } catch (e) {
         console.error(e);
         playBtn.disabled = false;
-        playBtn.innerText = 'Play Word';
+        playBtn.innerText = 'Play';
     }
 }
 
@@ -1201,10 +1557,13 @@ function handleApprovalRequest(req) {
         if (req.from === playerId) {
             alert('Your opponent rejected the word.');
             playBtn.disabled = false;
-            playBtn.innerText = 'Play Word';
+            playBtn.innerText = 'Play';
             pendingCommitData = null;
             // Clear request
-            update(ref(database, `game/scrabble/rooms/${roomName}`), { approvalRequest: null });
+            update(ref(database, `game/scrabble/rooms/${roomName}`), {
+                approvalRequest: null,
+                turnStartTime: { ".sv": "timestamp" }
+            });
         }
     }
 }
