@@ -27,29 +27,37 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 const database = getDatabase(app);
 
 // -------------------------------------------------------------
-// SVG PIECE VECTOR DEFINITIONS
+// CHESS PIECE IMAGES (Wood Theme matching Chess.com)
 // -------------------------------------------------------------
-const PIECE_SVGS = {
-    // White Pieces
-    'P': `<svg viewBox="0 0 45 45"><path d="M 22.5,9 C 24.15,9 25.5,10.35 25.5,12 C 25.5,13.65 24.15,15 22.5,15 C 20.85,15 19.5,13.65 19.5,12 C 19.5,10.35 20.85,9 22.5,9 z M 24,16.5 C 25,16.5 27.5,18 27.5,21 C 27.5,22.5 26,24.5 25,25.5 L 26,28 C 28.5,28 31,30 31,33 L 14,33 C 14,30 16.5,28 19,28 L 20,25.5 C 19,24.5 17.5,22.5 17.5,21 C 17.5,18 20,16.5 21,16.5 L 24,16.5 z M 12.5,34 L 32.5,34 L 32.5,37 L 12.5,37 L 12.5,34 z" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-    'R': `<svg viewBox="0 0 45 45"><path d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z M 12,36 L 12,32 L 33,32 L 33,36 L 12,36 z M 11,14 L 11,9 L 15,9 L 15,11 L 20,11 L 20,9 L 25,9 L 25,11 L 30,11 L 30,9 L 34,9 L 34,14 L 31,17 L 31,29.5 L 14,29.5 L 14,17 L 11,14 z M 14,16.5 L 31,16.5 L 31,14 L 14,14 L 14,16.5 z" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-    'N': `<svg viewBox="0 0 45 45"><path d="M 22,10 C 17.5,10 14,12.5 14,16 C 14,17.5 14.5,19 15.5,20 C 14.5,20.5 13,21.5 13,24 C 13,26 14.5,27.5 16,28 C 14,29 13.5,30.5 13.5,32.5 L 31.5,32.5 C 31.5,32.5 33,26.5 28.5,22 C 30,20.5 31,18 31,15.5 C 31,12 27.5,10 22,10 z M 12,34 L 33,34 L 33,37 L 12,37 L 12,34 z" fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    'B': `<svg viewBox="0 0 45 45"><g fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"><path d="M 9,36 C 12,36 13,34.5 13,33 C 13,31.5 12,30 9,30 C 6,30 5,31.5 5,33 C 5,34.5 6,36 9,36 z M 36,36 C 39,36 40,34.5 40,33 C 40,31.5 39,30 36,30 C 33,30 32,31.5 32,33 C 32,34.5 33,36 36,36 z M 9,36 L 36,36 L 36,39 L 9,39 L 9,36 z M 15,32 C 18,32 20,31 22.5,27 C 25,31 27,32 30,32 L 15,32 z M 22.5,10 C 24.5,10 27,12 27,17 C 27,21 24,25 22.5,26.5 C 21,25 18,21 18,17 C 18,12 20.5,10 22.5,10 z"/><circle cx="22.5" cy="8" r="1.5"/></g></svg>`,
-    'Q': `<svg viewBox="0 0 45 45"><g fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"><path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38,14 L 31,20 L 22.5,9 L 14,20 L 7,14 L 9,26 z M 9,28 L 36,28 L 36,31 L 9,31 L 9,28 z M 11,32 L 34,32 L 34,35 L 11,35 L 11,32 z M 10,36 L 35,36 L 35,39 L 10,39 L 10,36 z"/><circle cx="6" cy="12" r="2"/><circle cx="13" cy="18" r="2"/><circle cx="22.5" cy="7" r="2"/><circle cx="32" cy="18" r="2"/><circle cx="39" cy="12" r="2"/></g></svg>`,
-    'K': `<svg viewBox="0 0 45 45"><g fill="#f8fafc" stroke="#0f172a" stroke-width="1.5" stroke-linecap="round"><path d="M 22.5,11.6 L 22.5,6 M 20,8 M 25,8 M 22.5,25 C 22.5,25 27,17.5 27,14 C 27,11.5 25,10 22.5,10 C 20,10 18,11.5 18,14 C 18,17.5 22.5,25 22.5,25 z M 11.5,37 C 17,37 28,37 33.5,37 M 11.5,37 L 11.5,30 C 15,29 20,28.5 22.5,28.5 C 25,28.5 30,29 33.5,30 L 33.5,37 M 11.5,40 L 33.5,40 M 20,8 L 25,8"/><line x1="22.5" y1="6" x2="22.5" y2="10"/><line x1="20" y1="8" x2="25" y2="8"/></g></svg>`,
-
-    // Black Pieces
-    'p': `<svg viewBox="0 0 45 45"><path d="M 22.5,9 C 24.15,9 25.5,10.35 25.5,12 C 25.5,13.65 24.15,15 22.5,15 C 20.85,15 19.5,13.65 19.5,12 C 19.5,10.35 20.85,9 22.5,9 z M 24,16.5 C 25,16.5 27.5,18 27.5,21 C 27.5,22.5 26,24.5 25,25.5 L 26,28 C 28.5,28 31,30 31,33 L 14,33 C 14,30 16.5,28 19,28 L 20,25.5 C 19,24.5 17.5,22.5 17.5,21 C 17.5,18 20,16.5 21,16.5 L 24,16.5 z M 12.5,34 L 32.5,34 L 32.5,37 L 12.5,37 L 12.5,34 z" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-    'r': `<svg viewBox="0 0 45 45"><path d="M 9,39 L 36,39 L 36,36 L 9,36 L 9,39 z M 12,36 L 12,32 L 33,32 L 33,36 L 12,36 z M 11,14 L 11,9 L 15,9 L 15,11 L 20,11 L 20,9 L 25,9 L 25,11 L 30,11 L 30,9 L 34,9 L 34,14 L 31,17 L 31,29.5 L 14,29.5 L 14,17 L 11,14 z M 14,16.5 L 31,16.5 L 31,14 L 14,14 L 14,16.5 z" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"/></svg>`,
-    'n': `<svg viewBox="0 0 45 45"><path d="M 22,10 C 17.5,10 14,12.5 14,16 C 14,17.5 14.5,19 15.5,20 C 14.5,20.5 13,21.5 13,24 C 13,26 14.5,27.5 16,28 C 14,29 13.5,30.5 13.5,32.5 L 31.5,32.5 C 31.5,32.5 33,26.5 28.5,22 C 30,20.5 31,18 31,15.5 C 31,12 27.5,10 22,10 z M 12,34 L 33,34 L 33,37 L 12,37 L 12,34 z" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
-    'b': `<svg viewBox="0 0 45 45"><g fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"><path d="M 9,36 C 12,36 13,34.5 13,33 C 13,31.5 12,30 9,30 C 6,30 5,31.5 5,33 C 5,34.5 6,36 9,36 z M 36,36 C 39,36 40,34.5 40,33 C 40,31.5 39,30 36,30 C 33,30 32,31.5 32,33 C 32,34.5 33,36 36,36 z M 9,36 L 36,36 L 36,39 L 9,39 L 9,36 z M 15,32 C 18,32 20,31 22.5,27 C 25,31 27,32 30,32 L 15,32 z M 22.5,10 C 24.5,10 27,12 27,17 C 27,21 24,25 22.5,26.5 C 21,25 18,21 18,17 C 18,12 20.5,10 22.5,10 z"/><circle cx="22.5" cy="8" r="1.5"/></g></svg>`,
-    'q': `<svg viewBox="0 0 45 45"><g fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"><path d="M 9,26 C 17.5,24.5 30,24.5 36,26 L 38,14 L 31,20 L 22.5,9 L 14,20 L 7,14 L 9,26 z M 9,28 L 36,28 L 36,31 L 9,31 L 9,28 z M 11,32 L 34,32 L 34,35 L 11,35 L 11,32 z M 10,36 L 35,36 L 35,39 L 10,39 L 10,36 z"/><circle cx="6" cy="12" r="2"/><circle cx="13" cy="18" r="2"/><circle cx="22.5" cy="7" r="2"/><circle cx="32" cy="18" r="2"/><circle cx="39" cy="12" r="2"/></g></svg>`,
-    'k': `<svg viewBox="0 0 45 45"><g fill="#1e293b" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round"><path d="M 22.5,11.6 L 22.5,6 M 20,8 M 25,8 M 22.5,25 C 22.5,25 27,17.5 27,14 C 27,11.5 25,10 22.5,10 C 20,10 18,11.5 18,14 C 18,17.5 22.5,25 22.5,25 z M 11.5,37 C 17,37 28,37 33.5,37 M 11.5,37 L 11.5,30 C 15,29 20,28.5 22.5,28.5 C 25,28.5 30,29 33.5,30 L 33.5,37 M 11.5,40 L 33.5,40 M 20,8 L 25,8"/><line x1="22.5" y1="6" x2="22.5" y2="10"/><line x1="20" y1="8" x2="25" y2="8"/></g></svg>`
+const PIECE_IMAGES = {
+    'P': 'assets/images/chess/pieces/wp.png',
+    'R': 'assets/images/chess/pieces/wr.png',
+    'N': 'assets/images/chess/pieces/wn.png',
+    'B': 'assets/images/chess/pieces/wb.png',
+    'Q': 'assets/images/chess/pieces/wq.png',
+    'K': 'assets/images/chess/pieces/wk.png',
+    'p': 'assets/images/chess/pieces/bp.png',
+    'r': 'assets/images/chess/pieces/br.png',
+    'n': 'assets/images/chess/pieces/bn.png',
+    'b': 'assets/images/chess/pieces/bb.png',
+    'q': 'assets/images/chess/pieces/bq.png',
+    'k': 'assets/images/chess/pieces/bk.png'
 };
+
+const CDN_PIECE_CODES = {
+    'P': 'wp', 'R': 'wr', 'N': 'wn', 'B': 'wb', 'Q': 'wq', 'K': 'wk',
+    'p': 'bp', 'r': 'br', 'n': 'bn', 'b': 'bb', 'q': 'bq', 'k': 'bk'
+};
+
+const PIECE_SVGS = {};
+for (const [piece, localSrc] of Object.entries(PIECE_IMAGES)) {
+    const cdnCode = CDN_PIECE_CODES[piece];
+    PIECE_SVGS[piece] = `<img src="${localSrc}" class="chess-piece-img" alt="${piece}" draggable="false" onerror="this.onerror=null;this.src='https://images.chesscomfiles.com/chess-themes/pieces/wood/150/${cdnCode}.png';" />`;
+}
 
 const UNICODE_PIECES = {
     'P': '♙', 'R': '♖', 'N': '♘', 'B': '♗', 'Q': '♕', 'K': '♔',
-    'p': '♟', 'r': '♜', 'n': '➞', 'b': '♝', 'q': '♛', 'k': '♚'
+    'p': '♟', 'r': '♜', 'n': '♞', 'b': '♝', 'q': '♛', 'k': '♚'
 };
 
 const PIECE_VALUES = {
@@ -579,6 +587,16 @@ const chessBottomScore = document.getElementById('chess-bottom-score');
 const chessTopClock = document.getElementById('chess-top-clock');
 const chessBottomClock = document.getElementById('chess-bottom-clock');
 
+const chessSetupBtn = document.getElementById('chess-setup-btn');
+const chessSetupPanel = document.getElementById('chess-setup-panel');
+const chessSetupMoveTool = document.getElementById('chess-setup-move-tool');
+const chessSetupTrashTool = document.getElementById('chess-setup-trash-tool');
+const chessSetupTurnSelect = document.getElementById('chess-setup-turn-select');
+const chessSetupResetBtn = document.getElementById('chess-setup-reset-btn');
+const chessSetupClearBtn = document.getElementById('chess-setup-clear-btn');
+const chessSetupDoneBtn = document.getElementById('chess-setup-done-btn');
+const chessSetupCancelBtn = document.getElementById('chess-setup-cancel-btn');
+
 const chessFlipBtn = document.getElementById('chess-flip-btn');
 const chessUndoBtn = document.getElementById('chess-undo-btn');
 const chessResignBtn = document.getElementById('chess-resign-btn');
@@ -606,7 +624,14 @@ const chessLobbyReturnBtn = document.getElementById('chess-lobby-return-btn');
 let gameMode = 'local'; // 'local', 'bot', 'online'
 let botDifficulty = 'easy';
 let isFlipped = false;
-let boardTheme = 'emerald';
+let boardTheme = 'wood';
+
+// Board Setup Mode State
+let isSetupMode = false;
+let setupTool = 'reposition'; // 'reposition', 'trash', or piece code e.g. 'P', 'k'
+let setupSelectedSquare = null;
+let preSetupBoard = null;
+let preSetupTurn = 'w';
 
 let boardState = createInitialBoard();
 let currentTurn = 'w';
@@ -740,7 +765,7 @@ if (chessSoundBtn) {
 }
 
 if (chessThemeBtn) {
-    const themes = ['emerald', 'wood', 'cyber'];
+    const themes = ['wood', 'emerald', 'cyber'];
     chessThemeBtn.addEventListener('click', () => {
         const currentIdx = themes.indexOf(boardTheme);
         boardTheme = themes[(currentIdx + 1) % themes.length];
@@ -840,6 +865,326 @@ if (chessTimerSelect) {
         timerSeconds = val === 'none' ? 0 : parseInt(val, 10);
         resetClocks();
     });
+}
+
+// -------------------------------------------------------------
+// BOARD SETUP / CUSTOM POSITION EDITOR
+// -------------------------------------------------------------
+function canUseSetupMode() {
+    if (!isMultiplayer) return true;
+    const myPlayer = players[playerId];
+    return (gameData && gameData.hostId === playerId) || (myPlayer && myPlayer.isHost);
+}
+
+function updateSetupBtnVisibility() {
+    if (!chessSetupBtn) return;
+    if (canUseSetupMode() && moveHistory.length === 0 && !isGameOver) {
+        chessSetupBtn.style.display = 'flex';
+    } else {
+        chessSetupBtn.style.display = 'none';
+    }
+}
+
+function enterSetupMode() {
+    if (!canUseSetupMode()) {
+        alert('Only the host can edit the board before moves start!');
+        return;
+    }
+    isSetupMode = true;
+    setupTool = 'reposition';
+    setupSelectedSquare = null;
+    selectedSquare = null;
+    legalMovesForSelected = [];
+    preSetupBoard = copyBoard(boardState);
+    preSetupTurn = currentTurn;
+
+    stopClocks();
+
+    if (chessBoardElem) {
+        chessBoardElem.classList.add('setup-mode-active');
+    }
+    if (chessSetupPanel) {
+        chessSetupPanel.style.display = 'flex';
+    }
+    if (chessSetupBtn) {
+        chessSetupBtn.classList.add('active');
+    }
+    if (chessSetupTurnSelect) {
+        chessSetupTurnSelect.value = currentTurn;
+    }
+
+    // Reset tool buttons
+    updateSetupToolUI();
+    renderBoard();
+    updateUIInfo();
+}
+
+function exitSetupMode(applyChanges = true) {
+    if (!isSetupMode) return;
+
+    if (applyChanges) {
+        // Validate board has 1 white king and 1 black king
+        let whiteKings = 0;
+        let blackKings = 0;
+        for (let r = 0; r < 8; r++) {
+            for (let c = 0; c < 8; c++) {
+                const p = boardState[r] ? boardState[r][c] : null;
+                if (p === 'K') whiteKings++;
+                if (p === 'k') blackKings++;
+            }
+        }
+
+        if (whiteKings !== 1 || blackKings !== 1) {
+            alert(`A valid chess game requires exactly 1 White King and 1 Black King!\n(Current: White Kings: ${whiteKings}, Black Kings: ${blackKings})`);
+            return;
+        }
+
+        // Apply chosen turn
+        if (chessSetupTurnSelect) {
+            currentTurn = chessSetupTurnSelect.value;
+        }
+
+        // Dynamically compute castling rights based on piece placement
+        castlingRights = {
+            w: {
+                k: boardState[7] && boardState[7][4] === 'K' && boardState[7][7] === 'R',
+                q: boardState[7] && boardState[7][4] === 'K' && boardState[7][0] === 'R'
+            },
+            b: {
+                k: boardState[0] && boardState[0][4] === 'k' && boardState[0][7] === 'r',
+                q: boardState[0] && boardState[0][4] === 'k' && boardState[0][0] === 'r'
+            }
+        };
+
+        enPassantTarget = null;
+        moveHistory = [];
+        lastMove = null;
+        isGameOver = false;
+
+        if (isMultiplayer && roomName) {
+            update(ref(database, `game/chess/rooms/${roomName}`), {
+                board: boardToFirebase(boardState),
+                turn: currentTurn,
+                castlingRights: castlingRights,
+                enPassantTarget: null,
+                moveHistory: [],
+                lastMove: null,
+                isGameOver: false,
+                statusText: ''
+            });
+        }
+
+        resetClocks();
+        playSound('move');
+    } else {
+        // Cancel changes
+        if (preSetupBoard) {
+            boardState = copyBoard(preSetupBoard);
+            currentTurn = preSetupTurn;
+        }
+        if (timerSeconds > 0 && !isGameOver) {
+            startClocks();
+        }
+    }
+
+    isSetupMode = false;
+    setupSelectedSquare = null;
+
+    if (chessBoardElem) {
+        chessBoardElem.classList.remove('setup-mode-active');
+    }
+    if (chessSetupPanel) {
+        chessSetupPanel.style.display = 'none';
+    }
+    if (chessSetupBtn) {
+        chessSetupBtn.classList.remove('active');
+    }
+
+    renderBoard();
+    updateUIInfo();
+}
+
+function updateSetupToolUI() {
+    // Piece buttons
+    document.querySelectorAll('.setup-piece-btn').forEach(btn => {
+        if (btn.dataset.piece === setupTool) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+
+    // Tool buttons
+    if (chessSetupMoveTool) {
+        chessSetupMoveTool.classList.toggle('active', setupTool === 'reposition');
+    }
+    if (chessSetupTrashTool) {
+        chessSetupTrashTool.classList.toggle('active', setupTool === 'trash');
+    }
+}
+
+if (chessSetupBtn) {
+    chessSetupBtn.addEventListener('click', () => {
+        if (isSetupMode) {
+            exitSetupMode(false);
+        } else {
+            enterSetupMode();
+        }
+    });
+}
+
+if (chessSetupDoneBtn) {
+    chessSetupDoneBtn.addEventListener('click', () => {
+        exitSetupMode(true);
+    });
+}
+
+if (chessSetupCancelBtn) {
+    chessSetupCancelBtn.addEventListener('click', () => {
+        exitSetupMode(false);
+    });
+}
+
+if (chessSetupMoveTool) {
+    chessSetupMoveTool.addEventListener('click', () => {
+        setupTool = 'reposition';
+        setupSelectedSquare = null;
+        updateSetupToolUI();
+        renderBoard();
+    });
+}
+
+if (chessSetupTrashTool) {
+    chessSetupTrashTool.addEventListener('click', () => {
+        setupTool = 'trash';
+        setupSelectedSquare = null;
+        updateSetupToolUI();
+        renderBoard();
+    });
+}
+
+// Setup Piece Palette Clicks
+document.querySelectorAll('.setup-piece-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        setupTool = btn.dataset.piece;
+        setupSelectedSquare = null;
+        updateSetupToolUI();
+        renderBoard();
+    });
+});
+
+if (chessSetupResetBtn) {
+    chessSetupResetBtn.addEventListener('click', () => {
+        boardState = createInitialBoard();
+        if (chessSetupTurnSelect) chessSetupTurnSelect.value = 'w';
+        currentTurn = 'w';
+        setupSelectedSquare = null;
+        renderBoard();
+        updateUIInfo();
+        playSound('move');
+    });
+}
+
+if (chessSetupClearBtn) {
+    chessSetupClearBtn.addEventListener('click', () => {
+        boardState = [
+            [null, null, null, null, 'k', null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, null, null, null, null],
+            [null, null, null, null, 'K', null, null, null]
+        ];
+        setupSelectedSquare = null;
+        renderBoard();
+        updateUIInfo();
+        playSound('capture');
+    });
+}
+
+function handleSetupSquareClick(r, c) {
+    if (!canUseSetupMode()) return;
+
+    if (setupTool === 'trash') {
+        if (boardState[r] && boardState[r][c] !== null) {
+            boardState[r][c] = null;
+            playSound('capture');
+            renderBoard();
+            updateUIInfo();
+            if (isMultiplayer && roomName) {
+                update(ref(database, `game/chess/rooms/${roomName}`), {
+                    board: boardToFirebase(boardState)
+                });
+            }
+        }
+        return;
+    }
+
+    // Piece placement from palette
+    if (setupTool !== 'reposition') {
+        const pieceToPlace = setupTool;
+        // Pawns cannot be on row 0 or row 7 in chess
+        if ((pieceToPlace === 'P' || pieceToPlace === 'p') && (r === 0 || r === 7)) {
+            alert('Pawns cannot be placed on the 1st or 8th rank!');
+            return;
+        }
+
+        // If placing a King, remove any existing king of the same color first to keep 1 king
+        if (pieceToPlace === 'K' || pieceToPlace === 'k') {
+            for (let row = 0; row < 8; row++) {
+                for (let col = 0; col < 8; col++) {
+                    if (boardState[row][col] === pieceToPlace) {
+                        boardState[row][col] = null;
+                    }
+                }
+            }
+        }
+
+        boardState[r][c] = pieceToPlace;
+        playSound('move');
+        renderBoard();
+        updateUIInfo();
+
+        if (isMultiplayer && roomName) {
+            update(ref(database, `game/chess/rooms/${roomName}`), {
+                board: boardToFirebase(boardState)
+            });
+        }
+        return;
+    }
+
+    // Reposition mode (pick up and drop)
+    if (!setupSelectedSquare) {
+        if (boardState[r] && boardState[r][c] !== null) {
+            setupSelectedSquare = { r, c };
+            renderBoard();
+        }
+    } else {
+        if (setupSelectedSquare.r === r && setupSelectedSquare.c === c) {
+            setupSelectedSquare = null;
+            renderBoard();
+        } else {
+            const movingPiece = boardState[setupSelectedSquare.r][setupSelectedSquare.c];
+            if ((movingPiece === 'P' || movingPiece === 'p') && (r === 0 || r === 7)) {
+                alert('Pawns cannot be moved to the 1st or 8th rank!');
+                return;
+            }
+            boardState[r][c] = movingPiece;
+            boardState[setupSelectedSquare.r][setupSelectedSquare.c] = null;
+            setupSelectedSquare = null;
+            playSound('move');
+            renderBoard();
+            updateUIInfo();
+
+            if (isMultiplayer && roomName) {
+                update(ref(database, `game/chess/rooms/${roomName}`), {
+                    board: boardToFirebase(boardState)
+                });
+            }
+        }
+    }
 }
 
 // -------------------------------------------------------------
@@ -1083,6 +1428,7 @@ async function leaveRoom() {
     players = {};
     gameData = null;
     isMultiplayer = false;
+    exitSetupMode(false);
 
     if (chessJoinSection) chessJoinSection.style.display = 'none';
     if (chessLobbySection) chessLobbySection.style.display = 'none';
@@ -1097,6 +1443,7 @@ async function leaveRoom() {
 // GAMEPLAY ACTIONS & MOVES
 // -------------------------------------------------------------
 function startNewGame() {
+    exitSetupMode(false);
     boardState = createInitialBoard();
     currentTurn = 'w';
     selectedSquare = null;
@@ -1186,6 +1533,11 @@ function updateClockDisplay() {
 }
 
 function onSquareClick(r, c) {
+    if (isSetupMode) {
+        handleSetupSquareClick(r, c);
+        return;
+    }
+
     if (isGameOver) return;
 
     if (isMultiplayer) {
@@ -1214,7 +1566,7 @@ function onSquareClick(r, c) {
         legalMovesForSelected = [];
     }
 
-    renderBoard();
+    updateSelectionHighlights();
 }
 
 function executeMove(move) {
@@ -1424,39 +1776,93 @@ function endGame(message, icon = '🏆') {
 // -------------------------------------------------------------
 function renderBoard() {
     if (!chessBoardElem) return;
-    chessBoardElem.innerHTML = '';
 
     const kingInCheckPos = isKingInCheck(boardState, currentTurn) ? findKing(boardState, currentTurn) : null;
     const files = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
-    for (let i = 0; i < 64; i++) {
-        let r = Math.floor(i / 8);
-        let c = i % 8;
+    // Check if board squares already exist; if not, build them once
+    const existingSquares = chessBoardElem.querySelectorAll('.chess-square');
+    const needsBuild = existingSquares.length !== 64 || chessBoardElem.dataset.flipped !== String(isFlipped);
 
-        if (isFlipped) {
-            r = 7 - r;
-            c = 7 - c;
+    if (needsBuild) {
+        chessBoardElem.innerHTML = '';
+        chessBoardElem.dataset.flipped = String(isFlipped);
+
+        for (let i = 0; i < 64; i++) {
+            let r = Math.floor(i / 8);
+            let c = i % 8;
+
+            if (isFlipped) {
+                r = 7 - r;
+                c = 7 - c;
+            }
+
+            const square = document.createElement('div');
+            const isLight = (r + c) % 2 === 0;
+            square.className = `chess-square ${isLight ? 'light-sq' : 'dark-sq'}`;
+            square.dataset.r = r;
+            square.dataset.c = c;
+
+            if ((!isFlipped && c === 0) || (isFlipped && c === 7)) {
+                const rankLabel = document.createElement('span');
+                rankLabel.className = 'coord-rank';
+                rankLabel.textContent = 8 - r;
+                square.appendChild(rankLabel);
+            }
+            if ((!isFlipped && r === 7) || (isFlipped && r === 0)) {
+                const fileLabel = document.createElement('span');
+                fileLabel.className = 'coord-file';
+                fileLabel.textContent = files[c];
+                square.appendChild(fileLabel);
+            }
+
+            square.addEventListener('click', () => onSquareClick(r, c));
+            chessBoardElem.appendChild(square);
+        }
+    }
+
+    // Update squares, highlights, and pieces in-place
+    const squares = chessBoardElem.querySelectorAll('.chess-square');
+    squares.forEach(square => {
+        const r = parseInt(square.dataset.r, 10);
+        const c = parseInt(square.dataset.c, 10);
+
+        // Update highlight classes
+        if (isSetupMode) {
+            if (setupSelectedSquare && setupSelectedSquare.r === r && setupSelectedSquare.c === c) {
+                square.classList.add('selected-sq');
+            } else {
+                square.classList.remove('selected-sq');
+            }
+            square.classList.remove('last-move-sq');
+            square.classList.remove('in-check-sq');
+        } else {
+            if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+                square.classList.add('selected-sq');
+            } else {
+                square.classList.remove('selected-sq');
+            }
+
+            if (lastMove && ((lastMove.from.r === r && lastMove.from.c === c) || (lastMove.to.r === r && lastMove.to.c === c))) {
+                square.classList.add('last-move-sq');
+            } else {
+                square.classList.remove('last-move-sq');
+            }
+
+            if (kingInCheckPos && kingInCheckPos.r === r && kingInCheckPos.c === c) {
+                square.classList.add('in-check-sq');
+            } else {
+                square.classList.remove('in-check-sq');
+            }
         }
 
-        const square = document.createElement('div');
-        const isLight = (r + c) % 2 === 0;
-        square.className = `chess-square ${isLight ? 'light-sq' : 'dark-sq'}`;
-        square.dataset.r = r;
-        square.dataset.c = c;
+        // Update move indicator rings & dots
+        const existingDot = square.querySelector('.move-dot');
+        if (existingDot) existingDot.remove();
+        const existingRing = square.querySelector('.capture-ring');
+        if (existingRing) existingRing.remove();
 
-        if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
-            square.classList.add('selected-sq');
-        }
-
-        if (lastMove && ((lastMove.from.r === r && lastMove.from.c === c) || (lastMove.to.r === r && lastMove.to.c === c))) {
-            square.classList.add('last-move-sq');
-        }
-
-        if (kingInCheckPos && kingInCheckPos.r === r && kingInCheckPos.c === c) {
-            square.classList.add('in-check-sq');
-        }
-
-        const legalMove = legalMovesForSelected.find(m => m.to.r === r && m.to.c === c);
+        const legalMove = !isSetupMode ? legalMovesForSelected.find(m => m.to.r === r && m.to.c === c) : null;
         if (legalMove) {
             const isCaptureTarget = (boardState[r] && boardState[r][c] !== null) || legalMove.isEnPassant;
             if (isCaptureTarget) {
@@ -1470,35 +1876,82 @@ function renderBoard() {
             }
         }
 
-        if ((!isFlipped && c === 0) || (isFlipped && c === 7)) {
-            const rankLabel = document.createElement('span');
-            rankLabel.className = 'coord-rank';
-            rankLabel.textContent = 8 - r;
-            square.appendChild(rankLabel);
+        // Update pieces in-place per square without re-creating DOM nodes if the piece hasn't changed
+        const currentPiece = (boardState && boardState[r]) ? boardState[r][c] : null;
+        let pieceElem = square.querySelector('.chess-piece');
+
+        if (currentPiece) {
+            if (pieceElem) {
+                if (pieceElem.dataset.piece !== currentPiece) {
+                    pieceElem.dataset.piece = currentPiece;
+                    const img = pieceElem.querySelector('img');
+                    if (img) {
+                        img.src = PIECE_IMAGES[currentPiece];
+                        img.alt = currentPiece;
+                    } else {
+                        pieceElem.innerHTML = PIECE_SVGS[currentPiece] || UNICODE_PIECES[currentPiece];
+                    }
+                }
+            } else {
+                pieceElem = document.createElement('div');
+                pieceElem.className = 'chess-piece';
+                pieceElem.dataset.piece = currentPiece;
+                pieceElem.innerHTML = PIECE_SVGS[currentPiece] || UNICODE_PIECES[currentPiece];
+                square.appendChild(pieceElem);
+            }
+        } else {
+            if (pieceElem) {
+                pieceElem.remove();
+            }
         }
-        if ((!isFlipped && r === 7) || (isFlipped && r === 0)) {
-            const fileLabel = document.createElement('span');
-            fileLabel.className = 'coord-file';
-            fileLabel.textContent = files[c];
-            square.appendChild(fileLabel);
+    });
+}
+
+function updateSelectionHighlights() {
+    if (!chessBoardElem) return;
+    const squares = chessBoardElem.querySelectorAll('.chess-square');
+
+    squares.forEach(sq => {
+        const r = parseInt(sq.dataset.r, 10);
+        const c = parseInt(sq.dataset.c, 10);
+
+        // Update selected state
+        if (selectedSquare && selectedSquare.r === r && selectedSquare.c === c) {
+            sq.classList.add('selected-sq');
+        } else {
+            sq.classList.remove('selected-sq');
         }
 
-        const piece = (boardState && boardState[r]) ? boardState[r][c] : null;
-        if (piece) {
-            const pieceElem = document.createElement('div');
-            pieceElem.className = 'chess-piece';
-            pieceElem.innerHTML = PIECE_SVGS[piece] || UNICODE_PIECES[piece];
-            square.appendChild(pieceElem);
-        }
+        // Remove existing dots and rings
+        const existingDot = sq.querySelector('.move-dot');
+        if (existingDot) existingDot.remove();
+        const existingRing = sq.querySelector('.capture-ring');
+        if (existingRing) existingRing.remove();
 
-        square.addEventListener('click', () => onSquareClick(r, c));
-        chessBoardElem.appendChild(square);
-    }
+        // Check for legal moves on this square
+        const legalMove = legalMovesForSelected.find(m => m.to.r === r && m.to.c === c);
+        if (legalMove) {
+            const isCaptureTarget = (boardState[r] && boardState[r][c] !== null) || legalMove.isEnPassant;
+            if (isCaptureTarget) {
+                const ring = document.createElement('div');
+                ring.className = 'capture-ring';
+                sq.appendChild(ring);
+            } else {
+                const dot = document.createElement('div');
+                dot.className = 'move-dot';
+                sq.appendChild(dot);
+            }
+        }
+    });
 }
 
 function updateUIInfo() {
+    updateSetupBtnVisibility();
+
     if (chessStatusText) {
-        if (isGameOver) {
+        if (isSetupMode) {
+            chessStatusText.textContent = '🛠️ Board Setup Mode (Host)';
+        } else if (isGameOver) {
             chessStatusText.textContent = 'Game Ended';
         } else {
             const inCheck = isKingInCheck(boardState, currentTurn);
@@ -1563,14 +2016,24 @@ function updateUIInfo() {
     const whiteScoreDiff = Math.max(0, whiteMaterial - blackMaterial);
     const blackScoreDiff = Math.max(0, blackMaterial - whiteMaterial);
 
+    const renderCaptured = (container, list) => {
+        if (!container) return;
+        const key = list.join('');
+        if (container.dataset.capturedKey === key) return;
+        container.dataset.capturedKey = key;
+        container.innerHTML = list.map(p => 
+            `<img src="${PIECE_IMAGES[p]}" class="chess-captured-mini" alt="${p}" title="${p}" />`
+        ).join('');
+    };
+
     if (isFlipped) {
-        if (chessBottomCaptured) chessBottomCaptured.textContent = capturedWhite.map(p => UNICODE_PIECES[p]).join(' ');
-        if (chessTopCaptured) chessTopCaptured.textContent = capturedBlack.map(p => UNICODE_PIECES[p]).join(' ');
+        if (chessBottomCaptured) renderCaptured(chessBottomCaptured, capturedWhite);
+        if (chessTopCaptured) renderCaptured(chessTopCaptured, capturedBlack);
         if (chessBottomScore) chessBottomScore.textContent = blackScoreDiff > 0 ? `+${blackScoreDiff}` : '';
         if (chessTopScore) chessTopScore.textContent = whiteScoreDiff > 0 ? `+${whiteScoreDiff}` : '';
     } else {
-        if (chessBottomCaptured) chessBottomCaptured.textContent = capturedBlack.map(p => UNICODE_PIECES[p]).join(' ');
-        if (chessTopCaptured) chessTopCaptured.textContent = capturedWhite.map(p => UNICODE_PIECES[p]).join(' ');
+        if (chessBottomCaptured) renderCaptured(chessBottomCaptured, capturedBlack);
+        if (chessTopCaptured) renderCaptured(chessTopCaptured, capturedWhite);
         if (chessBottomScore) chessBottomScore.textContent = whiteScoreDiff > 0 ? `+${whiteScoreDiff}` : '';
         if (chessTopScore) chessTopScore.textContent = blackScoreDiff > 0 ? `+${blackScoreDiff}` : '';
     }

@@ -1198,7 +1198,7 @@
                         <!-- Top Player Info (Black) -->
                         <div id="chess-player-top" class="chess-player-bar">
                             <div class="chess-player-info">
-                                <span class="chess-player-avatar">♚</span>
+                                <span class="chess-player-avatar"><img src="assets/images/chess/pieces/bk.png" class="chess-player-avatar-img" alt="Black" /></span>
                                 <span id="chess-top-name" class="chess-player-name">Black Player</span>
                                 <span id="chess-top-captured" class="chess-captured-pieces"></span>
                                 <span id="chess-top-score" class="chess-material-score"></span>
@@ -1207,14 +1207,14 @@
                         </div>
 
                         <!-- Chess Board Container -->
-                        <div class="chess-board-outer theme-emerald">
+                        <div class="chess-board-outer theme-wood">
                             <div id="chess-board" class="chess-board"></div>
                         </div>
 
                         <!-- Bottom Player Info (White) -->
                         <div id="chess-player-bottom" class="chess-player-bar active-turn">
                             <div class="chess-player-info">
-                                <span class="chess-player-avatar">♔</span>
+                                <span class="chess-player-avatar"><img src="assets/images/chess/pieces/wk.png" class="chess-player-avatar-img" alt="White" /></span>
                                 <span id="chess-bottom-name" class="chess-player-name">White Player</span>
                                 <span id="chess-bottom-captured" class="chess-captured-pieces"></span>
                                 <span id="chess-bottom-score" class="chess-material-score"></span>
@@ -1225,29 +1225,85 @@
 
                     <!-- Sidebar Controls & Move History -->
                     <div class="chess-sidebar card">
-                        <h3 style="margin-bottom: 0.5rem; text-align: center; color: var(--primary-light);">♟️ Controls & Log</h3>
+                        <div class="chess-sidebar-title">♟️ Controls & Log</div>
                         
                         <div class="chess-controls-grid">
-                            <button id="chess-flip-btn" class="btn btn-secondary" title="Flip Board Perspective">🔄 Flip Board</button>
-                            <button id="chess-undo-btn" class="btn btn-secondary" title="Undo Last Move">↩️ Undo Move</button>
+                            <button id="chess-setup-btn" class="btn btn-secondary" style="grid-column: span 2; border-color: #d4a359; color: #f59e0b; font-weight: 700;" title="Custom Board Setup / Edit Pieces">🛠️ Setup Board</button>
+                            <button id="chess-flip-btn" class="btn btn-secondary" title="Flip Board Perspective">🔄 Flip</button>
+                            <button id="chess-undo-btn" class="btn btn-secondary" title="Undo Last Move">↩️ Undo</button>
                             <button id="chess-resign-btn" class="btn btn-secondary" style="color: var(--danger); border-color: rgba(239, 68, 68, 0.4);" title="Resign Game">🏳️ Resign</button>
-                            <button id="chess-draw-btn" class="btn btn-secondary" title="Offer Draw">🤝 Offer Draw</button>
+                            <button id="chess-draw-btn" class="btn btn-secondary" title="Offer Draw">🤝 Draw</button>
+                        </div>
+
+                        <!-- Setup Mode Palette (Visible only in Setup Mode) -->
+                        <div id="chess-setup-panel" class="chess-setup-panel" style="display: none;">
+                            <div class="chess-setup-header">
+                                <span>🛠️ Board Editor</span>
+                                <span class="chess-setup-tip">Click piece then click square</span>
+                            </div>
+
+                            <!-- White pieces palette -->
+                            <div class="chess-setup-palette-row" title="Select White piece to place">
+                                <span class="palette-label">White:</span>
+                                <button type="button" class="setup-piece-btn" data-piece="K"><img src="assets/images/chess/pieces/wk.png" alt="K" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="Q"><img src="assets/images/chess/pieces/wq.png" alt="Q" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="R"><img src="assets/images/chess/pieces/wr.png" alt="R" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="B"><img src="assets/images/chess/pieces/wb.png" alt="B" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="N"><img src="assets/images/chess/pieces/wn.png" alt="N" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="P"><img src="assets/images/chess/pieces/wp.png" alt="P" /></button>
+                            </div>
+
+                            <!-- Black pieces palette -->
+                            <div class="chess-setup-palette-row" title="Select Black piece to place">
+                                <span class="palette-label">Black:</span>
+                                <button type="button" class="setup-piece-btn" data-piece="k"><img src="assets/images/chess/pieces/bk.png" alt="k" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="q"><img src="assets/images/chess/pieces/bq.png" alt="q" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="r"><img src="assets/images/chess/pieces/br.png" alt="r" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="b"><img src="assets/images/chess/pieces/bb.png" alt="b" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="n"><img src="assets/images/chess/pieces/bn.png" alt="n" /></button>
+                                <button type="button" class="setup-piece-btn" data-piece="p"><img src="assets/images/chess/pieces/bp.png" alt="p" /></button>
+                            </div>
+
+                            <!-- Erase / Move mode buttons -->
+                            <div class="chess-setup-tools-row">
+                                <button type="button" id="chess-setup-move-tool" class="btn btn-secondary setup-tool-btn active" title="Move & Reposition pieces on board">🖐️ Reposition</button>
+                                <button type="button" id="chess-setup-trash-tool" class="btn btn-secondary setup-tool-btn" title="Click squares to delete pieces">🗑️ Remove</button>
+                            </div>
+
+                            <!-- Next Turn Selector (Host chooses who starts) -->
+                            <div class="chess-setup-turn-row">
+                                <label for="chess-setup-turn-select">Next to Move:</label>
+                                <select id="chess-setup-turn-select" class="form-control">
+                                    <option value="w" selected>♔ White starts</option>
+                                    <option value="b">♚ Black starts</option>
+                                </select>
+                            </div>
+
+                            <!-- Utility buttons: Clear All & Reset Default -->
+                            <div class="chess-setup-actions-row">
+                                <button type="button" id="chess-setup-reset-btn" class="btn btn-secondary" style="font-size: 0.72rem;">Standard</button>
+                                <button type="button" id="chess-setup-clear-btn" class="btn btn-secondary" style="font-size: 0.72rem;">Clear All</button>
+                            </div>
+
+                            <!-- Finish Button -->
+                            <button type="button" id="chess-setup-done-btn" class="btn btn-primary" style="width: 100%; margin-top: 0.25rem; font-weight: 700; height: 36px;">✓ Start with this setup</button>
+                            <button type="button" id="chess-setup-cancel-btn" class="btn btn-secondary" style="width: 100%; margin-top: 0.2rem; font-size: 0.72rem; height: 28px;">Cancel</button>
                         </div>
 
                         <!-- Timer Selector -->
-                        <div style="margin-top: 1rem;">
-                            <label style="font-size: 0.85rem; color: var(--text-secondary);">Timer Option:</label>
-                            <select id="chess-timer-select" class="form-control" style="width: 100%; margin-top: 0.25rem; padding: 0.4rem; background: var(--bg-elevated); color: var(--text-primary); border: 1px solid rgba(255,255,255,0.1); border-radius: 6px;">
-                                <option value="none">⏱️ No Timer (Casual)</option>
-                                <option value="180">⏱️ 3 Minutes (Blitz)</option>
-                                <option value="300" selected>⏱️ 5 Minutes (Rapid)</option>
-                                <option value="600">⏱️ 10 Minutes (Standard)</option>
+                        <div class="chess-timer-group">
+                            <label>⏱️ Timer Option:</label>
+                            <select id="chess-timer-select" class="form-control">
+                                <option value="none">⏱️ Casual (No Timer)</option>
+                                <option value="180">⏱️ 3 Min (Blitz)</option>
+                                <option value="300" selected>⏱️ 5 Min (Rapid)</option>
+                                <option value="600">⏱️ 10 Min (Standard)</option>
                             </select>
                         </div>
 
                         <!-- Move History Table -->
-                        <div style="margin-top: 1rem; flex: 1; display: flex; flex-direction: column; min-height: 200px;">
-                            <div style="font-weight: 600; font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 0.5rem;">Move History</div>
+                        <div class="chess-move-log-section">
+                            <div class="chess-move-log-title">Move History</div>
                             <div id="chess-move-log" class="chess-move-log"></div>
                         </div>
                     </div>
