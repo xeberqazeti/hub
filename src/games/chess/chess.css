@@ -75,7 +75,7 @@
     align-items: center;
     gap: 0.65rem;
     width: 100%;
-    background: #1e130b url('/assets/images/chess/wood_table_bg.jpg') center/cover;
+    background: #1e130b url('../../../assets/images/chess/wood_table_bg.jpg') center/cover;
     padding: 1.1rem;
     border-radius: 14px;
     box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.08);
@@ -222,16 +222,22 @@
     position: relative;
     user-select: none;
     box-sizing: border-box;
-    background-image: url('/assets/images/chess/walnut.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
+    background-color: #835633;
+    background-image: 
+        url('../../../assets/images/chess/walnut.png'),
+        repeating-conic-gradient(#eed9b3 0% 25%, #835633 0% 50%);
+    background-size: 100% 100%, 25% 25%;
+    background-repeat: no-repeat, repeat;
 }
 
 /* Wood Board (Matching Chess.com Wood Theme) */
 .theme-wood .chess-board {
-    background-image: url('/assets/images/chess/walnut.png');
-    background-size: 100% 100%;
-    background-repeat: no-repeat;
+    background-color: #835633;
+    background-image: 
+        url('../../../assets/images/chess/walnut.png'),
+        repeating-conic-gradient(#eed9b3 0% 25%, #835633 0% 50%);
+    background-size: 100% 100%, 25% 25%;
+    background-repeat: no-repeat, repeat;
 }
 
 .theme-wood .chess-square.light-sq,
